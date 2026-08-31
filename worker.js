@@ -3,6 +3,34 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
 
+    // Verify Turnstile and stream the resume PDF from private KV storage.
+    // The PDF is never exposed via a public URL - only reachable through this gate.
+    let downloadFailed = false;
+    if (path === "/resume/download" && request.method === "POST") {
+      const formData = await request.formData();
+      const turnstileToken = formData.get("cf-turnstile-response");
+      const verifyResp = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          secret: env.TURNSTILE_SECRET,
+          response: turnstileToken || "",
+          remoteip: request.headers.get("CF-Connecting-IP") || ""
+        })
+      });
+      const verifyResult = await verifyResp.json();
+      if (verifyResult.success) {
+        const pdfBytes = await env.RESUME_KV.get("resume-pdf", "arrayBuffer");
+        return new Response(pdfBytes, {
+          headers: {
+            "Content-Type": "application/pdf",
+            "Content-Disposition": 'attachment; filename="TrevorDeMelo_Resume.pdf"'
+          }
+        });
+      }
+      downloadFailed = true;
+    }
+
     const css = `
       :root { --bg-page: #1b1e1b; --bg-panel: #263023; --text-main: #e1e4e1;
               --accent-green: #8ef79f; --border-color: #586d4e; }
@@ -48,6 +76,8 @@ export default {
       iframe { width: 100%; height: 100%; border: none; }
       .back-link { color: var(--accent-green); text-decoration: none; font-weight: bold; }
       .back-link:hover { background: var(--accent-green); color: var(--bg-page); }
+      .verify-btn { font-family: monospace; font-size: 1em; font-weight: bold; color: var(--accent-green); background: none; border: 1px solid var(--border-color); padding: 8px 16px; cursor: pointer; }
+      .verify-btn:hover { background: var(--accent-green); color: var(--bg-page); border-color: var(--accent-green); }
 
       /* RESUME STRUCTURE STYLES */
       .resume-block { margin-bottom: 2rem; }
@@ -73,7 +103,24 @@ export default {
     let content = "";
 
     // ROUTING SYSTEM: Determines which content block to inject based on URL path
-    if (path === "/projects") {
+    if (path === "/resume/download") {
+
+      // ==========================================
+      // Resume download gate (Turnstile)
+      // ==========================================
+      content = `
+        <h1>Verify to Download</h1>
+        <p>Quick check before downloading &mdash; keeps the file off scrapers.</p>
+        ${downloadFailed ? '<p style="color:#e0847a;">Verification failed. Please try again.</p>' : ''}
+        <form method="POST" action="/resume/download">
+          <div class="cf-turnstile" data-sitekey="0x4AAAAAAEjEuryG5gMxi_Ec"></div>
+          <p style="margin-top: 16px;">
+            <button type="submit" class="verify-btn">Verify &amp; Download</button>
+          </p>
+        </form>
+        <p style="margin-top: 1.5rem;"><a href="/resume" class="back-link">← Back to Resume</a></p>`;
+
+    } else if (path === "/projects") {
       
       // ==========================================
       // Project Gallery
@@ -172,7 +219,7 @@ export default {
         <h1>Resume</h1>
         <p>Technical track, system profiles, and core competencies.</p>
         <p style="margin-bottom: 2rem;">
-          <a href="https://raw.githubusercontent.com/SleepyZip/mywebpage/refs/heads/main/Assets/Resume/TrevorDeMelo_Resume.pdf" download="TrevorDeMelo_Resume.pdf" class="contact-link" style="padding-left:0;">Download Resume (PDF) &darr;</a>
+          <a href="/resume/download" class="contact-link" style="padding-left:0;">Download Resume (PDF) &darr;</a>
         </p>
 
         <div class="resume-block">
@@ -280,7 +327,7 @@ export default {
     }
 
     // Assemble the complete HTML document using the layout frame
-    return new Response(`<!DOCTYPE html><html><head><title>Trevor DeMelo | Portfolio</title><link rel="icon" type="image/png" href="https://raw.githubusercontent.com/SleepyZip/mywebpage/refs/heads/main/Assets/Images/NOZfaviconduck.png"><meta name="description" content="Trevor DeMelo &mdash; IT professional. Network administration, systems diagnostics, and Cloudflare Workers projects."><meta property="og:title" content="Trevor DeMelo | Portfolio"><meta property="og:description" content="IT professional. Network administration, systems diagnostics, and Cloudflare Workers projects."><meta property="og:type" content="website"><meta property="og:url" content="https://trevordemelo.com"><meta property="og:image" content="https://github.com/SleepyZip/mywebpage/blob/main/Assets/Images/AboutMe.png?raw=true"><style>${css}</style></head><body>
+    return new Response(`<!DOCTYPE html><html><head><title>Trevor DeMelo | Portfolio</title><link rel="icon" type="image/png" href="https://raw.githubusercontent.com/SleepyZip/mywebpage/refs/heads/main/Assets/Images/NOZfaviconduck.png"><meta name="description" content="Trevor DeMelo &mdash; IT professional. Network administration, systems diagnostics, and Cloudflare Workers projects."><meta property="og:title" content="Trevor DeMelo | Portfolio"><meta property="og:description" content="IT professional. Network administration, systems diagnostics, and Cloudflare Workers projects."><meta property="og:type" content="website"><meta property="og:url" content="https://trevordemelo.com"><meta property="og:image" content="https://github.com/SleepyZip/mywebpage/blob/main/Assets/Images/AboutMe.png?raw=true"><script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script><style>${css}</style></head><body>
       <div class="container">
         <nav>
           <div>
