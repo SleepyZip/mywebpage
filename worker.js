@@ -170,8 +170,11 @@ export default {
 // ==========================================
       content = `
         <h1>Resume</h1>
-        <p style="margin-bottom: 2rem;">Technical track, system profiles, and core competencies.</p>
-        
+        <p>Technical track, system profiles, and core competencies.</p>
+        <p style="margin-bottom: 2rem;">
+          <a href="https://raw.githubusercontent.com/SleepyZip/mywebpage/refs/heads/main/Assets/Resume/TrevorDeMelo_Resume.pdf" download="TrevorDeMelo_Resume.pdf" class="contact-link" style="padding-left:0;">Download Resume (PDF) &darr;</a>
+        </p>
+
         <div class="resume-block">
           <div class="resume-section-title">Core Competencies</div>
           <div class="skills-group">
