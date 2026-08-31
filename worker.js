@@ -138,6 +138,10 @@ export default {
             <h3>Browser Activity Report</h3>
             <p>SQLite forensics &amp; Excel reporting tool.</p>
           </a>
+          <a href="/project/3" class="card">
+            <h3>Windows Scripts Toolkit</h3>
+            <p>PowerShell &amp; batch tools for IT triage.</p>
+          </a>
         </div>`;
 
     } else if (path === "/project/1") {
@@ -207,6 +211,43 @@ export default {
               <div class="skill-tag">PowerShell / RMM collection</div>
             </div>
             <p style="margin-top: 1.5rem;"><a href="https://github.com/SleepyZip/SleepyToolz/tree/main/browser-activity-report" target="_blank" class="contact-link" style="padding-left:0;">Source on GitHub &rarr;</a></p>
+        </div>
+        <a href="/projects" class="back-link" style="display: block; margin-top: 2rem;">← Back to Projects</a>`;
+
+    } else if (path === "/project/3") {
+
+      // ==========================================
+      // Project - Windows Scripts Toolkit
+      // ==========================================
+      content = `
+        <h1>Windows Scripts Toolkit</h1>
+        <p>PowerShell and batch scripts for common Windows IT triage and maintenance tasks.</p>
+        <div class="description-block" style="margin-top: 1rem; border-top: 2px solid var(--border-color); padding-top: 1rem;">
+            <h3 style="color: var(--accent-green);">> OVERVIEW</h3>
+            <p>A small toolkit of the scripts I actually reach for on an unfamiliar workstation or a routine maintenance pass &mdash; a system triage report, a network health check that flags what's actually broken instead of dumping raw ping output, a dry-run-by-default temp file cleaner, and the classic release/renew/flush-DNS/Winsock reset routine as a batch file for when PowerShell isn't the right tool for the job.</p>
+            <h3 style="color: var(--accent-green); margin-top: 1.5rem;">> SCRIPTS</h3>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 1rem; border: 1px solid var(--border-color);">
+                <thead>
+                    <tr style="background-color: var(--border-color); color: var(--bg-page);">
+                        <th style="padding: 0.5rem; text-align: left;">Script</th>
+                        <th style="padding: 0.5rem; text-align: left;">Purpose</th>
+                    </tr>
+                </thead>
+                <tbody style="font-family: monospace;">
+                    <tr><td style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);">Get-SystemInfoReport.ps1</td><td style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);">OS/hardware/disk/network dump plus recently installed software</td></tr>
+                    <tr><td style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);">Test-NetworkHealth.ps1</td><td style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);">Gateway/DNS/external connectivity check with a plain-English summary</td></tr>
+                    <tr><td style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);">Clear-TempFiles.ps1</td><td style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);">Temp/cache cleanup, dry-run by default</td></tr>
+                    <tr><td style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);">Reset-NetworkStack.bat</td><td style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);">Classic IP release/renew, DNS flush, Winsock reset</td></tr>
+                </tbody>
+            </table>
+            <h3 style="color: var(--accent-green); margin-top: 1.5rem;">> STACK</h3>
+            <div class="skills-group">
+              <div class="skill-tag">PowerShell</div>
+              <div class="skill-tag">Batch / cmd.exe</div>
+              <div class="skill-tag">Windows CIM/WMI</div>
+              <div class="skill-tag">Network diagnostics</div>
+            </div>
+            <p style="margin-top: 1.5rem;"><a href="https://github.com/SleepyZip/SleepyToolz/tree/main/windows-scripts-toolkit" target="_blank" class="contact-link" style="padding-left:0;">Source on GitHub &rarr;</a></p>
         </div>
         <a href="/projects" class="back-link" style="display: block; margin-top: 2rem;">← Back to Projects</a>`;
 
