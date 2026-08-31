@@ -238,6 +238,7 @@ export default {
                     <tr><td style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);">Test-NetworkHealth.ps1</td><td style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);">Gateway/DNS/external connectivity check with a plain-English summary</td></tr>
                     <tr><td style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);">Clear-TempFiles.ps1</td><td style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);">Temp/cache cleanup, dry-run by default</td></tr>
                     <tr><td style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);">Reset-NetworkStack.bat</td><td style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);">Classic IP release/renew, DNS flush, Winsock reset</td></tr>
+                    <tr><td style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);">Get-/Set-UserNetworkShares.ps1</td><td style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);">Reads a user's mapped drives (live or offline) and replicates them onto another user</td></tr>
                 </tbody>
             </table>
             <h3 style="color: var(--accent-green); margin-top: 1.5rem;">> STACK</h3>
