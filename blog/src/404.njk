@@ -1,0 +1,11 @@
+---
+layout: layouts/base.njk
+title: Not Found
+permalink: /404.html
+eleventyExcludeFromCollections: true
+---
+{# Pages serves this (with a real 404 status) for unknown /blog URLs. Without it,
+   Pages falls back to the index page for every unknown path. #}
+<h1>Not Found</h1>
+<p>&gt; No post lives at this address. It may have been renamed or unpublished.</p>
+<a href="{{ base }}/" class="back-link">&larr; Back to Blog</a>
