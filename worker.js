@@ -50,13 +50,12 @@ export default {
       nav a { color: var(--text-emph); text-decoration: none; margin-right: 0.5rem; padding: 3px 8px; font-weight: bold; letter-spacing: 0.05em; font-size: 0.9rem; }
       nav > div:first-child a:first-child { margin-left: -8px; }
       nav a:hover { background: var(--accent); color: var(--panel); }
-      /* Icon buttons (theme toggle on top, Admin Portal below) stacked in the panel's
+      /* Icon buttons (Minimize on top, Admin Portal below) stacked in the panel's
          top-right corner, the same 12px in from the top and right edges. They sit
          outside the nav's flow; the nav's bottom padding puts the divider 12px below the
          stack, and the links sit level with the middle of the stack. */
       .nav-right { position: absolute; top: 12px; right: 12px; z-index: 2; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
-      /* Square icon buttons at the right end of the nav (Admin Portal, theme toggle).
-         20px squares, stacked in .nav-right. */
+      /* Square 20px icon buttons (Minimize, Admin Portal, and the blog RSS link). */
       nav a { line-height: 18px; }
       nav a.nav-icon-btn, .nav-icon-btn { width: 20px; height: 20px; margin: 0; padding: 0; display: grid; place-items: center; background: var(--panel); border: 1px solid var(--border); box-shadow: 2px 2px 0 var(--shadow); cursor: pointer; }
       nav a.nav-icon-btn:hover, .nav-icon-btn:hover { background: var(--panel); border-color: var(--accent); }
@@ -81,7 +80,7 @@ export default {
       .theme-word { color: var(--muted); padding: 1px 3px; transition: background 0.15s ease, color 0.15s ease; }
       .theme-sep { color: var(--muted); padding: 0 1px; }
       :root:not([data-theme="light"]) .theme-word-dark, :root[data-theme="light"] .theme-word-light { background: var(--accent); color: var(--panel); }
-      @media (prefers-reduced-motion: reduce) { .theme-rest, .theme-word { transition: none; } }
+      @media (prefers-reduced-motion: reduce) { .theme-word { transition: none; } }
 
       h1 { font-size: 1.7rem; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--text-emph); }
       h2 { font-size: 1.5rem; color: var(--text-emph); margin-bottom: 1rem; }
@@ -319,7 +318,8 @@ export default {
       }
     `;
 
-    // Shared page script (theme toggle + star field); served at /assets/site.js.
+    // Shared page script, served at /assets/site.js: the moon theme toggle, Minimize, the
+    // clock, and the night sky (stars, constellations, and rare events).
     const siteJs = `
   // The panel's footprint in page coordinates, padded to cover its offset shadow.
   // While the page is minimized, that's just the small corner tile.

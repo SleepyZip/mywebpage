@@ -21,6 +21,14 @@ The Worker isn't deployed by CI; this repo just tracks the source. To publish a 
 3. Select all, delete, paste in the updated `worker.js`, click **Deploy**
 4. Commit and push the change here so this repo stays in sync with what's live
 
+## The night sky
+
+`site.js` (in `worker.js`) draws the background: twinkling ASCII stars, constellations from real star positions, and rare events, one at a time. The top-left moon is the theme toggle and shows tonight's real phase.
+
+- **Tuning:** the `SKY_EVENTS` line sets each event's chance per ~20s check (set one to `0` to turn it off). `HOLIDAYS` switches the date-based extras on or off: meteor showers on their peak nights, fireworks Dec 30 - Jan 1, and a blood moon on lunar eclipse dates (the `ECLIPSES` list).
+- **Previewing:** add `#sky` to any page URL to play every event in turn, or `#sky-newyear` / `#sky-bloodmoon` for the holidays.
+- **Reduced motion:** visitors with reduced motion turned on get a still sky.
+
 ## The blog
 
 Cloudflare Pages builds `blog/` on every push to `main` (root directory `blog`, build command `npm run build`, output `_site`). The Worker proxies `trevordemelo.com/blog/*` to the Pages site, so the blog shares the main site's domain, nav, and styles.
