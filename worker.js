@@ -287,6 +287,19 @@ export default {
       .meteor::after { content: ""; position: absolute; right: -1.5px; top: -1.75px; width: 3px; height: 3px; border-radius: 50%; background: var(--meteor); box-shadow: 0 0 6px var(--meteor); }
       .sat-dot { position: absolute; left: -1.5px; top: -1.5px; width: 3px; height: 3px; border-radius: 50%; background: var(--base1); }
       :root[data-theme="light"] .sat-dot { background: var(--base01); }
+      /* Airplane: steady red and green wingtip lights either side of a white double-flash strobe */
+      .airplane { position: absolute; pointer-events: none; opacity: 0; width: 0; height: 0; }
+      .plane-light { position: absolute; left: -1.5px; width: 3px; height: 3px; border-radius: 50%; }
+      .plane-top { top: -5.5px; }
+      .plane-bottom { top: 2.5px; }
+      .plane-port { background: var(--red); box-shadow: 0 0 4px var(--red); }
+      .plane-starboard { background: var(--green); box-shadow: 0 0 4px var(--green); }
+      .plane-strobe { --strobe: var(--base3); top: -1.5px; background: var(--strobe); opacity: 0; animation: plane-strobe 1.3s linear infinite; }
+      :root[data-theme="light"] .plane-strobe { --strobe: var(--base03); }
+      @keyframes plane-strobe {
+        0%, 4%, 8%, 12%, 100% { opacity: 0; box-shadow: none; }
+        2%, 10% { opacity: 1; box-shadow: 0 0 6px 1px var(--strobe); }
+      }
       .supernova { font-size: 14px; line-height: 1; color: var(--base2); text-shadow: 0 0 6px var(--yellow), 0 0 16px var(--yellow); }
       :root[data-theme="light"] .supernova { color: var(--base01); }
       .supernova-ring { width: 18px; height: 18px; border: 1px solid var(--cyan); border-radius: 50%; }
@@ -300,6 +313,7 @@ export default {
         .card:hover { transform: none; }
         .star { animation: none; opacity: 0.35; }
         .constellation, .comet { display: none; }
+        .plane-strobe { animation: none; }
         .moon-lead path, .moon-lead circle, .moon-label, .moon-phase, .container, .min-rest { transition: none; }
         .is-minimized .nav-icon-btn.min-toggle { animation: none; box-shadow: 0 0 8px color-mix(in srgb, var(--cyan) 45%, transparent); }
       }
@@ -621,7 +635,7 @@ export default {
     const hash = location.hash;
 
     // Chance of each event per check (about every 20s). Set one to 0 to turn it off.
-    const SKY_EVENTS = { meteor: 0.35, satellite: 0.10, supernova: 0.05, comet: 0.05 };
+    const SKY_EVENTS = { meteor: 0.35, satellite: 0.10, airplane: 0.08, supernova: 0.05, comet: 0.05 };
     // Date-based extras.
     const HOLIDAYS = { meteorShowers: true, newYearFireworks: true, bloodMoon: true };
 
@@ -746,6 +760,23 @@ export default {
       ], timing);
     };
 
+    // Airplane: a slow, nearly level crossing. Steady red and green wingtip lights (red on
+    // the left wing, green on the right) either side of a white double-flash strobe.
+    const airplane = (done) => {
+      const v = view(), h = v.bottom - v.top;
+      const leftToRight = Math.random() < 0.5;
+      const x0 = leftToRight ? -20 : v.w + 20, x1 = leftToRight ? v.w + 20 : -20;
+      const y0 = v.top + rand(0.1, 0.6) * h, y1 = y0 + rand(-0.06, 0.06) * h;
+      const upper = leftToRight ? "plane-port" : "plane-starboard", lower = leftToRight ? "plane-starboard" : "plane-port";
+      const p = add("airplane", x0, y0, '<span class="plane-light plane-top ' + upper + '"></span><span class="plane-light plane-strobe"></span><span class="plane-light plane-bottom ' + lower + '"></span>');
+      p.animate([
+        { transform: "translate(0px, 0px)", opacity: 0 },
+        { opacity: 0.9, offset: 0.05 },
+        { opacity: 0.9, offset: 0.95 },
+        { transform: "translate(" + (x1 - x0).toFixed(0) + "px, " + (y1 - y0).toFixed(0) + "px)", opacity: 0 },
+      ], { duration: rand(35000, 50000), easing: "linear" }).onfinish = () => { p.remove(); done(); };
+    };
+
     // Comet: glides slowly across the visible sky on a shallow diagonal, behind the panel.
     const comet = (done) => {
       const v = view(), h = v.bottom - v.top;
@@ -793,10 +824,10 @@ export default {
       next();
     };
 
-    const EVENTS = { meteor: meteors, satellite, supernova, comet, fireworks };
+    const EVENTS = { meteor: meteors, satellite, airplane, supernova, comet, fireworks };
     // Holidays tilt the odds: New Year's (Dec 30 - Jan 1) is mostly fireworks, shower nights mostly meteors.
     const chances = newYear ? { fireworks: 0.7, meteor: 0.2, satellite: 0.05 }
-      : shower ? Object.assign({}, SKY_EVENTS, { meteor: 0.8 - SKY_EVENTS.satellite - SKY_EVENTS.supernova - SKY_EVENTS.comet })
+      : shower ? Object.assign({}, SKY_EVENTS, { meteor: 0.8 - Object.keys(SKY_EVENTS).filter((k) => k !== "meteor").reduce((sum, k) => sum + SKY_EVENTS[k], 0) })
       : SKY_EVENTS;
 
     let busy = false;
@@ -814,7 +845,7 @@ export default {
 
     if (hash === "#sky") {
       // Preview: every event once, back to back (the satellite always flares).
-      const order = ["meteor", "satellite", "supernova", "comet", "fireworks"];
+      const order = ["meteor", "satellite", "airplane", "supernova", "comet", "fireworks"];
       const step = () => {
         const name = order.shift();
         if (!name) return check();
