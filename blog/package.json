@@ -1,0 +1,16 @@
+{
+  "name": "trevordemelo-blog",
+  "version": "1.0.0",
+  "description": "Blog for trevordemelo.com, written in Obsidian and built with 11ty",
+  "scripts": {
+    "start": "npx @11ty/eleventy --serve --quiet",
+    "build": "npx @11ty/eleventy",
+    "publish": "node scripts/publish.mjs",
+    "publish:check": "node scripts/publish.mjs --dry-run"
+  },
+  "type": "module",
+  "devDependencies": {
+    "@11ty/eleventy": "^3.1.6"
+  },
+  "private": true
+}

@@ -1,0 +1,21 @@
+---
+layout: layouts/base.njk
+---
+<article class="post">
+  <header class="post-header">
+    <h1>{{ title }}</h1>
+    <p class="post-meta">
+      <time datetime="{{ page.date | isoDate }}">{{ page.date | readableDate }}</time>
+      <span aria-hidden="true">&middot;</span> {{ content | readingTime }}
+      {% if draft %}<span class="post-draft">DRAFT</span>{% endif %}
+    </p>
+    {% set postTags = tags | reject("equalto", "post") if tags else [] %}
+    {% if postTags | length %}
+    <div class="skills-group">{% for tag in postTags %}<span class="skill-tag">#{{ tag }}</span>{% endfor %}</div>
+    {% endif %}
+  </header>
+  <div class="post-body">
+    {{ content | safe }}
+  </div>
+</article>
+<a href="{{ base }}/" class="back-link" style="display: block; margin-top: 2.5rem;">&larr; Back to Blog</a>

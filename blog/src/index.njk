@@ -1,0 +1,26 @@
+---
+layout: layouts/base.njk
+title: Blog
+permalink: /
+---
+<div class="blog-head">
+  <h1>Blog</h1>
+  <a href="{{ base }}/feed.xml" class="nav-icon-btn rss-link" type="application/atom+xml" aria-label="RSS feed"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="3" cy="13" r="1.8"/><path d="M1.5 7.5a7 7 0 0 1 7 7M1.5 2.5a12 12 0 0 1 12 12"/></svg><span class="rss-rest" aria-hidden="true">RSS Feed</span></a>
+</div>
+<p>Notes on IT, networking, and things I've built.</p>
+
+{% if collections.posts | length %}
+<ul class="post-list">
+  {% for post in collections.posts %}
+  <li>
+    <a href="{{ base }}{{ post.url }}" class="post-card">
+      <span class="post-card-date"><time datetime="{{ post.date | isoDate }}">{{ post.date | readableDate }}</time>{% if post.data.draft %} &middot; DRAFT{% endif %}</span>
+      <span class="post-card-title">{{ post.data.title }}</span>
+      {% if post.data.summary %}<span class="post-card-summary">{{ post.data.summary }}</span>{% endif %}
+    </a>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="post-empty">&gt; No posts yet. Check back soon.</p>
+{% endif %}
