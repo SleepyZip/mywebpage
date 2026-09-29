@@ -43,6 +43,20 @@ export default {
       html { overflow: hidden; }
       body { font-family: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace; font-size: 15px; background: var(--bg); color: var(--text); padding: 3rem 1rem; display: flex; justify-content: center; align-items: flex-start; height: 100vh; height: 100dvh; overflow: hidden; }
 
+      /* Background wordmark: fades in once on load, sits behind the panel (z-index 0 vs
+         the panel's 1) and stays put, so a taller panel naturally covers more of it as
+         pages open. */
+      .wordmark { position: fixed; top: clamp(210px, 30vh, 340px); left: 0; width: 100%; transform: translate(0, -50%) rotate(-12deg); z-index: 0; padding: 0 1rem; display: flex; flex-direction: column; align-items: center; font-family: "Jost", sans-serif; font-weight: 300; letter-spacing: 0.06em; color: var(--text-emph); pointer-events: none; opacity: 0; animation: wordmark-in 0.9s ease-out 0.15s forwards; transition: transform 0.4s ease-out; }
+      .wordmark span { display: block; line-height: 1; white-space: nowrap; }
+      .wordmark .wm-first { font-size: clamp(2.75rem, 10vw, 7rem); transform: translateX(-0.5em); }
+      .wordmark .wm-second { font-size: clamp(2.75rem, 10vw, 7rem); margin-top: 0.05em; transform: translateX(0.7em); }
+      @keyframes wordmark-in { to { opacity: 0.6; } }
+      @media (max-width: 680px) {
+        .wordmark .wm-first, .wordmark .wm-second { font-size: clamp(2.1rem, 13vw, 3.5rem); }
+        .wordmark .wm-first { transform: translateX(-0.3em); }
+        .wordmark .wm-second { transform: translateX(0.4em); }
+      }
+
       /* The panel: bordered card with the offset shadow block behind it */
       .container { background: var(--panel); border: 2px solid var(--border); padding: 1.5rem 2.25rem 2.25rem; width: 100%; max-width: 820px; max-height: 100%; display: flex; flex-direction: column; overflow: hidden; box-shadow: 10px 10px 0 var(--shadow); }
       /* The page's content scrolls inside the panel, below the fixed nav bar; the thin
@@ -327,33 +341,45 @@ export default {
       /* Daytime (light theme): the night sky gives way to drifting ASCII clouds and the odd
          bird, falling leaves, plane, hot-air balloon, or migrating flock. */
       :root[data-theme="light"] :is(.star, .constellation, .comet, .meteor, .satellite, .supernova, .supernova-ring, .firework, .airplane) { display: none; }
-      :root:not([data-theme="light"]) :is(.cloud, .birds, .leaf, .day-plane, .balloon) { display: none; }
+      :root:not([data-theme="light"]) :is(.cloud, .birds, .leaf, .day-plane, .balloon, .rain) { display: none; }
       /* Clouds live in their own layer: above the sun and moon (so they can pass in front),
          below the panel. Each is ASCII line art over a soft cream body. */
       .clouds { position: absolute; top: 0; left: 0; width: 100%; height: 100vh; z-index: 0; overflow: hidden; pointer-events: none; }
       .cloud { position: absolute; left: -320px; margin: 0; font: inherit; font-size: 13px; line-height: 1.15; color: var(--base1); white-space: pre; isolation: isolate; animation: cloud-drift 240s linear infinite; }
       .cloud-body { position: absolute; z-index: -1; border-radius: 50%; background: var(--base3); filter: blur(2.5px); }
       @keyframes cloud-drift { to { transform: translateX(calc(100vw + 640px)); } }
-      .birds, .leaf, .day-plane, .balloon { position: absolute; pointer-events: none; opacity: 0; }
+      .birds, .leaf, .day-plane, .balloon, .rain { position: absolute; pointer-events: none; opacity: 0; }
       .birds { width: 0; height: 0; }
       .bird { position: absolute; width: 17px; height: 8px; overflow: visible; }
       .bird path { fill: none; stroke: var(--base01); stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; }
-      .leaf svg { width: 12px; height: 12px; display: block; }
+      .leaf { font-size: 15px; line-height: 1; }
       .day-plane { width: 0; height: 0; }
       .day-plane svg { position: absolute; left: -24px; top: -5px; width: 24px; height: 10px; fill: var(--base01); }
       .contrail { position: absolute; right: 24px; top: -1px; width: 280px; height: 2px; border-radius: 2px; background: linear-gradient(to left, var(--base3), transparent); }
-      .balloon svg { width: 26px; height: 38px; display: block; }
+      .balloon pre { font: inherit; font-size: 15px; line-height: 1.05; white-space: pre; }
+      /* Rain shower: a loose cluster of falling streaks drifts across the sky. */
+      .rain { width: 0; height: 0; }
+      .rain-drops { position: absolute; left: -4px; top: 0px; width: 70px; height: 36px; overflow: visible; }
+      .rain-drop { position: absolute; top: 0; width: 1.5px; height: 9px; border-radius: 1px; background: linear-gradient(var(--blue), transparent); opacity: 0; animation: rain-fall linear infinite; }
+      @keyframes rain-fall {
+        0% { transform: translateY(0px); opacity: 0; }
+        12% { opacity: 0.55; }
+        88% { opacity: 0.55; }
+        100% { transform: translateY(32px); opacity: 0; }
+      }
       /* Blood moon: on real lunar eclipse nights the moon toggle glows red. */
       .sky-blood-moon .moon-toggle .moon-art .moon-lit { fill: var(--orange); }
       .sky-blood-moon .moon-toggle .moon-art .moon-disk { fill: color-mix(in srgb, var(--red) 40%, var(--base02)); stroke: var(--red); }
       .sky-blood-moon .moon-toggle .moon-art { filter: drop-shadow(0 0 9px color-mix(in srgb, var(--red) 55%, transparent)); }
       @media (prefers-reduced-motion: reduce) {
+        .wordmark { animation: none; opacity: 0.6; }
         .card { transition: none; }
         .card:hover { transform: none; }
         .star { animation: none; opacity: 0.35; }
         .constellation, .comet { display: none; }
         .cloud { animation: none; }
         .plane-strobe { animation: none; }
+        .rain-drop { animation: none; }
         .moon-lead path, .moon-lead circle, .moon-label, .moon-phase, .container, .min-rest { transition: none; }
         .moon-toggle { animation: none; }
         .is-minimized .nav-icon-btn.min-toggle { animation: none; box-shadow: 0 0 8px color-mix(in srgb, var(--cyan) 45%, transparent); }
@@ -411,6 +437,22 @@ export default {
       label();
       dispatchEvent(new CustomEvent("themechange")); // swaps the night sky for the day scene
     });
+  })();
+
+  // Wordmark: drifts a few px opposite the cursor, like it's floating at a different depth than the page.
+  (() => {
+    const wm = document.querySelector(".wordmark");
+    if (!wm || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let x = 0, y = 0, raf = null;
+    const apply = () => {
+      raf = null;
+      wm.style.transform = "translate(" + x + "px, calc(-50% + " + y + "px)) rotate(-12deg)";
+    };
+    addEventListener("mousemove", (e) => {
+      x = (e.clientX / innerWidth - 0.5) * -28;
+      y = (e.clientY / innerHeight - 0.5) * -20;
+      if (!raf) raf = requestAnimationFrame(apply);
+    }, { passive: true });
   })();
 
   // Minimize: the panel collapses upward into a glowing scan line, then folds into the
@@ -1062,14 +1104,16 @@ export default {
     };
 
     // Leaves: a handful tumbling down on the breeze in autumn palette colors.
+    // A single ASCII glyph, colored per spawn, tumbling down like the other palette-accent
+    // glyphs on the site (stars, comet head).
     const LEAF_COLORS = ["orange", "yellow", "red", "green"];
     const leaves = (done) => {
       const v = view(), h = v.bottom - v.top, n = Math.floor(rand(3, 7));
       let left = n;
       for (let i = 0; i < n; i++) {
         setTimeout(() => {
-          const leaf = add("leaf", rand(0.05, 0.95) * v.w, v.top + rand(-0.05, 0.25) * h,
-            '<svg viewBox="0 0 12 12"><path fill="var(--' + pick(LEAF_COLORS) + ')" d="M1 11 C1 5 5 1 11 1 C11 7 7 11 1 11 Z"/><path d="M1 11 L8 4" stroke="var(--base02)" stroke-width="0.6" opacity="0.35"/></svg>');
+          const leaf = add("leaf", rand(0.05, 0.95) * v.w, v.top + rand(-0.05, 0.25) * h, "&");
+          leaf.style.color = "var(--" + pick(LEAF_COLORS) + ")";
           const fall = rand(0.35, 0.7) * h, drift = rand(-120, 120), spin = rand(-360, 360), frames = [];
           for (let k = 0; k <= 8; k++) {
             const t = k / 8, sway = Math.sin(t * Math.PI * 3) * 28;
@@ -1095,14 +1139,15 @@ export default {
       ], { duration: rand(45000, 60000), easing: "linear" }).onfinish = () => { p.remove(); done(); };
     };
 
-    // Hot-air balloon: rises slowly from low in the sky, drifting and swaying.
+    // Hot-air balloon: an ASCII block, colored per spawn, rising slowly from low in the
+    // sky, drifting and swaying.
+    const BALLOON_COLORS = ["red", "yellow", "orange", "blue", "violet", "magenta"];
+    const NL = String.fromCharCode(10);
+    const BALLOON_ART = [" .-.", "(   )", " )-(", "  |", " [_]"].join(NL);
     const balloon = (done) => {
       const v = view(), h = v.bottom - v.top;
-      const b = add("balloon", rand(0.1, 0.9) * v.w, v.top + rand(0.7, 0.9) * h,
-        '<svg viewBox="0 0 26 38"><path fill="var(--red)" d="M13 1 C5 1 1 7 1 13 C1 20 8 25 10 28 L16 28 C18 25 25 20 25 13 C25 7 21 1 13 1 Z"/>' +
-        '<path fill="var(--yellow)" d="M13 1 C9.5 1 7.5 7 7.5 13 C7.5 20 10 25 11 28 L15 28 C16 25 18.5 20 18.5 13 C18.5 7 16.5 1 13 1 Z"/>' +
-        '<path fill="var(--blue)" d="M13 1 C11.8 1 11 7 11 13 C11 20 12 25 12.5 28 L13.5 28 C14 25 15 20 15 13 C15 7 14.2 1 13 1 Z"/>' +
-        '<path d="M10.5 28 L11 32 M15.5 28 L15 32" stroke="var(--base01)" stroke-width="0.7"/><rect x="10.5" y="32" width="5" height="4" rx="0.8" fill="var(--base01)"/></svg>');
+      const b = add("balloon", rand(0.1, 0.9) * v.w, v.top + rand(0.7, 0.9) * h, "<pre>" + BALLOON_ART + "</pre>");
+      b.style.color = "var(--" + pick(BALLOON_COLORS) + ")";
       const rise = rand(0.35, 0.55) * h, drift = rand(-200, 200), frames = [];
       for (let k = 0; k <= 8; k++) {
         const t = k / 8;
@@ -1111,11 +1156,31 @@ export default {
       b.animate(frames, { duration: rand(70000, 90000), easing: "ease-in-out" }).onfinish = () => { b.remove(); done(); };
     };
 
+    // Rain shower: a loose cluster of falling streaks drifts across the sky.
+    const rain = (done) => {
+      const v = view(), h = v.bottom - v.top;
+      const leftToRight = Math.random() < 0.5;
+      const x0 = leftToRight ? -140 : v.w + 140, x1 = leftToRight ? v.w + 140 : -140;
+      const y0 = v.top + rand(0.06, 0.24) * h;
+      let drops = "";
+      for (let i = 0; i < 7; i++) {
+        const dx = 6 + i * 9 + rand(-3, 3);
+        drops += '<span class="rain-drop" style="left:' + dx.toFixed(0) + 'px;animation-duration:' + rand(0.5, 0.85).toFixed(2) + 's;animation-delay:-' + rand(0, 0.8).toFixed(2) + 's"></span>';
+      }
+      const g = add("rain", x0, y0, '<div class="rain-drops">' + drops + '</div>');
+      g.animate([
+        { transform: "translate(0px, 0px)", opacity: 0 },
+        { opacity: 0.9, offset: 0.06 },
+        { opacity: 0.9, offset: 0.92 },
+        { transform: "translate(" + (x1 - x0).toFixed(0) + "px, 0px)", opacity: 0 },
+      ], { duration: rand(26000, 34000), easing: "linear" }).onfinish = () => { g.remove(); done(); };
+    };
+
     // Chance of each daytime event per check. Set one to 0 to turn it off.
-    const DAY_EVENTS = { birds: 0.30, leaves: 0.18, plane: 0.10, balloon: 0.04, migration: 0.04 };
+    const DAY_EVENTS = { birds: 0.28, leaves: 0.17, plane: 0.10, balloon: 0.05, migration: 0.04, rain: 0.10 };
     const isDay = () => root.dataset.theme === "light";
 
-    const EVENTS = { meteor: meteors, satellite, airplane, supernova, comet, fireworks, birds, migration, leaves, plane: dayPlane, balloon };
+    const EVENTS = { meteor: meteors, satellite, airplane, supernova, comet, fireworks, birds, migration, leaves, plane: dayPlane, balloon, rain };
     // Holidays tilt the odds: New Year's (Dec 30 - Jan 1) is mostly fireworks, shower nights mostly meteors.
     const chances = newYear ? { fireworks: 0.7, meteor: 0.2, satellite: 0.05 }
       : shower ? Object.assign({}, SKY_EVENTS, { meteor: 0.8 - Object.keys(SKY_EVENTS).filter((k) => k !== "meteor").reduce((sum, k) => sum + SKY_EVENTS[k], 0) })
@@ -1138,7 +1203,7 @@ export default {
     if (hash === "#sky") {
       // Preview: every event once, back to back (the satellite always flares). In the light
       // theme it previews the daytime events instead.
-      const order = isDay() ? ["birds", "leaves", "plane", "balloon", "migration"]
+      const order = isDay() ? ["birds", "leaves", "plane", "balloon", "migration", "rain"]
         : ["meteor", "satellite", "airplane", "supernova", "comet", "fireworks"];
       const step = () => {
         const name = order.shift();
@@ -1479,7 +1544,8 @@ export default {
     const current = (href) => (path === href || (href === "/projects" && path.startsWith("/project")) ? ' aria-current="page"' : "");
 
     // Assemble the complete HTML document using the layout frame
-    return new Response(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Trevor DeMelo | Portfolio</title><link rel="icon" type="image/svg+xml" href="/assets/duck.svg"><meta name="description" content="Trevor DeMelo, IT professional. Network administration, systems diagnostics, and Cloudflare Workers projects."><meta property="og:title" content="Trevor DeMelo | Portfolio"><meta property="og:description" content="IT professional. Network administration, systems diagnostics, and Cloudflare Workers projects."><meta property="og:type" content="website"><meta property="og:url" content="https://trevordemelo.com"><meta property="og:image" content="https://github.com/SleepyZip/mywebpage/blob/main/Assets/Images/AboutMe.png?raw=true"><script>try { if (localStorage.getItem("theme") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script><link rel="stylesheet" href="/assets/site.css"></head><body>
+    return new Response(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Trevor DeMelo | Portfolio</title><link rel="icon" type="image/svg+xml" href="/assets/duck.svg"><meta name="description" content="Trevor DeMelo, IT professional. Network administration, systems diagnostics, and Cloudflare Workers projects."><meta property="og:title" content="Trevor DeMelo | Portfolio"><meta property="og:description" content="IT professional. Network administration, systems diagnostics, and Cloudflare Workers projects."><meta property="og:type" content="website"><meta property="og:url" content="https://trevordemelo.com"><meta property="og:image" content="https://github.com/SleepyZip/mywebpage/blob/main/Assets/Images/AboutMe.png?raw=true"><script>try { if (localStorage.getItem("theme") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300&display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/site.css"></head><body>
+      <div class="wordmark" aria-hidden="true"><span class="wm-first">Trevor</span><span class="wm-second">DeMelo</span></div>
       <div class="sky" aria-hidden="true"></div>
       <button type="button" class="moon-toggle" aria-label="Switch to light theme"><svg class="moon-art" viewBox="0 0 38 38" aria-hidden="true"><circle class="moon-disk" cx="19" cy="19" r="18.6"/><path class="moon-lit" d=""/></svg><svg class="sun-art" viewBox="0 0 38 38" aria-hidden="true"><circle cx="19" cy="19" r="8.5"/><path d="M19 2.5v5M19 30.5v5M2.5 19h5M30.5 19h5M7.3 7.3l3.5 3.5M27.2 27.2l3.5 3.5M7.3 30.7l3.5-3.5M27.2 10.8l3.5-3.5"/></svg><span class="moon-lead" aria-hidden="true"><svg viewBox="0 0 60 20"><path d="M1 1 L13 13 H55"/><circle cx="57" cy="13" r="2"/></svg></span><span class="moon-phase" aria-hidden="true"></span><span class="moon-label" aria-hidden="true"><span class="theme-word theme-word-light">Light</span><span class="theme-sep">/</span><span class="theme-word theme-word-dark">Dark</span></span></button>
       <div class="clouds" aria-hidden="true"></div>
