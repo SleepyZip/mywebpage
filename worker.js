@@ -35,6 +35,7 @@ export default {
         --text: var(--base00); --text-emph: var(--base02); --muted: var(--base1);
         --border: var(--base1); --rule: var(--base2);
         --shadow: rgba(38, 139, 210, 0.18);
+        --accent: var(--red);
         color-scheme: light;
       }
 
@@ -162,6 +163,7 @@ export default {
 
       /* BLOG (11ty, served at /blog): post list, post body, Obsidian callouts */
       nav a[aria-current="page"] { color: var(--accent); }
+      nav a[aria-current="page"]:hover { color: var(--panel); }
       /* Blog index header: title left, RSS button right. The button matches the nav icon
          buttons and slides open to read "RSS Feed" on hover/focus. */
       .blog-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
