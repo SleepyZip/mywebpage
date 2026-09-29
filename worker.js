@@ -665,7 +665,7 @@ export default {
       if (document.documentElement.dataset.theme !== "light") return;
       const w = document.documentElement.clientWidth;
       const order = CLOUDS.slice().sort(() => Math.random() - 0.5);
-      const count = Math.max(4, Math.round(w / 300));
+      const count = Math.round(1.36 * Math.max(4, w / 300));
       for (let i = 0; i < count; i++) {
         const shape = order[i % order.length];
         const cloud = document.createElement("pre");
