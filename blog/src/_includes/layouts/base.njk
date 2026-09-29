@@ -11,8 +11,8 @@
   <meta property="og:title" content="{{ title or 'Blog' }}">
   <meta property="og:type" content="{% if layout == 'layouts/post.njk' %}article{% else %}website{% endif %}">
   <meta property="og:url" content="https://trevordemelo.com{{ base }}{{ page.url }}">
-  {# Apply a saved light theme before paint (same one-liner as the main site). #}
-  <script>try { if (localStorage.getItem("theme") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script>
+  {# Light by default unless dark was chosen; applied before paint (same one-liner as the main site). #}
+  <script>var t; try { t = localStorage.getItem("theme"); } catch (e) {} if (t !== "dark") document.documentElement.dataset.theme = "light";</script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300&display=swap" rel="stylesheet">

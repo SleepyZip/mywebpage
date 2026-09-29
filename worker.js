@@ -29,7 +29,7 @@ export default {
         --accent: var(--blue); --accent-2: var(--cyan);
         color-scheme: dark;
       }
-      /* Light theme: opt-in via the nav toggle (dark stays the default). */
+      /* Light theme: the default (set before paint in <head>); the toggle switches to dark. */
       :root[data-theme="light"] {
         --bg: var(--base2); --panel: var(--base3); --bg-alt: var(--base2);
         --text: var(--base00); --text-emph: var(--base02); --muted: var(--base1);
@@ -399,7 +399,7 @@ export default {
     // clock, and the night sky (stars, constellations, and rare events).
     const siteJs = `
   // Theme toggle: the moon in dark mode (drawn in tonight's real phase), the sun in
-  // light mode. Dark by default; the choice is remembered per browser.
+  // light mode. Light by default; the choice is remembered per browser.
   (() => {
     const btn = document.querySelector(".moon-toggle");
     if (!btn) return;
@@ -1507,7 +1507,7 @@ export default {
     const current = (href) => (path === href || (href === "/projects" && path.startsWith("/project")) ? ' aria-current="page"' : "");
 
     // Assemble the complete HTML document using the layout frame
-    return new Response(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Trevor DeMelo | Portfolio</title><link rel="icon" type="image/svg+xml" href="/assets/duck.svg"><meta name="description" content="Trevor DeMelo, IT professional. Network administration, systems diagnostics, and Cloudflare Workers projects."><meta property="og:title" content="Trevor DeMelo | Portfolio"><meta property="og:description" content="IT professional. Network administration, systems diagnostics, and Cloudflare Workers projects."><meta property="og:type" content="website"><meta property="og:url" content="https://trevordemelo.com"><meta property="og:image" content="https://github.com/SleepyZip/mywebpage/blob/main/Assets/Images/AboutMe.png?raw=true"><script>try { if (localStorage.getItem("theme") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300&display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/site.css"></head><body>
+    return new Response(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Trevor DeMelo | Portfolio</title><link rel="icon" type="image/svg+xml" href="/assets/duck.svg"><meta name="description" content="Trevor DeMelo, IT professional. Network administration, systems diagnostics, and Cloudflare Workers projects."><meta property="og:title" content="Trevor DeMelo | Portfolio"><meta property="og:description" content="IT professional. Network administration, systems diagnostics, and Cloudflare Workers projects."><meta property="og:type" content="website"><meta property="og:url" content="https://trevordemelo.com"><meta property="og:image" content="https://github.com/SleepyZip/mywebpage/blob/main/Assets/Images/AboutMe.png?raw=true"><script>var t; try { t = localStorage.getItem("theme"); } catch (e) {} if (t !== "dark") document.documentElement.dataset.theme = "light";</script><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300&display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/site.css"></head><body>
       <div class="wordmark" aria-hidden="true"><span class="wm-name">Trevor DeMelo</span><span class="wm-rule"></span></div>
       <div class="sky" aria-hidden="true"></div>
       <button type="button" class="moon-toggle" aria-label="Switch to light theme"><svg class="moon-art" viewBox="0 0 38 38" aria-hidden="true"><circle class="moon-disk" cx="19" cy="19" r="18.6"/><path class="moon-lit" d=""/></svg><svg class="sun-art" viewBox="0 0 38 38" aria-hidden="true"><circle cx="19" cy="19" r="8"/><g class="sun-rays"><text x="19" y="4.5">|</text><text x="29.3" y="8.7">/</text><text x="33.5" y="19">-</text><text x="29.3" y="29.3">&#92;</text><text x="19" y="33.5">|</text><text x="8.7" y="29.3">/</text><text x="4.5" y="19">-</text><text x="8.7" y="8.7">&#92;</text></g></svg><span class="moon-lead" aria-hidden="true"><svg viewBox="0 0 60 20"><path d="M1 1 L13 13 H55"/><circle cx="57" cy="13" r="2"/></svg></span><span class="moon-phase" aria-hidden="true"></span><span class="moon-label" aria-hidden="true"><span class="theme-word theme-word-light">Light</span><span class="theme-sep">/</span><span class="theme-word theme-word-dark">Dark</span></span></button>
