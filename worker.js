@@ -64,7 +64,9 @@ export default {
       .container { background: var(--panel); border: 2px solid var(--border); padding: 1.5rem 2.25rem 2.25rem; width: 100%; max-width: 820px; max-height: 100%; display: flex; flex-direction: column; overflow: hidden; box-shadow: 10px 10px 0 var(--shadow); }
       /* The page's content scrolls inside the panel, below the fixed nav bar; the thin
          scrollbar sits just inside the panel's right border. */
-      .page { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; margin-right: -1.5rem; padding-right: 1.5rem; scrollbar-width: thin; scrollbar-color: var(--base01) transparent; }
+      /* The negative-margin/padding pairs keep content in place while giving the scroll box room
+         on both sides: the scrollbar on the right, and hovered cards lifting 3px on the left. */
+      .page { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; margin-right: -1.5rem; padding-right: 1.5rem; margin-left: -6px; padding-left: 6px; scrollbar-width: thin; scrollbar-color: var(--base01) transparent; }
       .page::-webkit-scrollbar { width: 8px; }
       .page::-webkit-scrollbar-thumb { background: var(--base01); border-radius: 4px; }
       .page::-webkit-scrollbar-track { background: transparent; }
@@ -665,7 +667,7 @@ export default {
       if (document.documentElement.dataset.theme !== "light") return;
       const w = document.documentElement.clientWidth;
       const order = CLOUDS.slice().sort(() => Math.random() - 0.5);
-      const count = Math.round(1.36 * Math.max(4, w / 300));
+      const count = Math.round(1.56 * Math.max(4, w / 300));
       for (let i = 0; i < count; i++) {
         const shape = order[i % order.length];
         const cloud = document.createElement("pre");
