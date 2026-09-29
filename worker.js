@@ -39,17 +39,29 @@ export default {
       }
 
       * { box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace; font-size: 15px; background: var(--bg); color: var(--text); padding: 3rem 1rem; display: flex; justify-content: center; }
+      /* The page itself never scrolls: the panel fits the window and scrolls inside. */
+      html { overflow: hidden; }
+      body { font-family: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace; font-size: 15px; background: var(--bg); color: var(--text); padding: 3rem 1rem; display: flex; justify-content: center; align-items: flex-start; height: 100vh; height: 100dvh; overflow: hidden; }
 
       /* The panel: bordered card with the offset shadow block behind it */
-      .container { background: var(--panel); border: 2px solid var(--border); padding: 1.5rem 2.25rem 2.25rem; width: 100%; max-width: 820px; box-shadow: 10px 10px 0 var(--shadow); }
+      .container { background: var(--panel); border: 2px solid var(--border); padding: 1.5rem 2.25rem 2.25rem; width: 100%; max-width: 820px; max-height: 100%; display: flex; flex-direction: column; overflow: hidden; box-shadow: 10px 10px 0 var(--shadow); }
+      /* The page's content scrolls inside the panel, below the fixed nav bar; the thin
+         scrollbar sits just inside the panel's right border. */
+      .page { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; margin-right: -1.5rem; padding-right: 1.5rem; scrollbar-width: thin; scrollbar-color: var(--base01) transparent; }
+      .page::-webkit-scrollbar { width: 8px; }
+      .page::-webkit-scrollbar-thumb { background: var(--base01); border-radius: 4px; }
+      .page::-webkit-scrollbar-track { background: transparent; }
       a { color: var(--accent); }
       code { color: var(--accent-2); background: var(--bg-alt); padding: 1px 5px; }
 
-      nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; border-bottom: 2px solid var(--rule); padding-bottom: 26px; padding-right: 3rem; }
+      nav { flex: none; display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; border-bottom: 2px solid var(--rule); padding-bottom: 26px; padding-right: 3rem; }
       nav a { color: var(--text-emph); text-decoration: none; margin-right: 0.5rem; padding: 3px 8px; font-weight: bold; letter-spacing: 0.05em; font-size: 0.9rem; }
       nav > div:first-child a:first-child { margin-left: -8px; }
       nav a:hover { background: var(--accent); color: var(--panel); }
+      /* Home page: the panel is just the nav bar (no divider, no space below it). */
+      .container.is-home { padding-bottom: 0; }
+      .container.is-home nav { border-bottom: none; margin-bottom: 0; }
+      .container.is-home .page { display: none; }
       /* Icon buttons (Minimize on top, Admin Portal below) stacked in the panel's
          top-right corner, the same 12px in from the top and right edges. They sit
          outside the nav's flow; the nav's bottom padding puts the divider 12px below the
@@ -125,6 +137,7 @@ export default {
       @media (max-width: 680px) {
         body { padding: 3rem 0.75rem 1rem; }
         .container { padding: 1.5rem 1.25rem 1.25rem; box-shadow: 6px 6px 0 var(--shadow); }
+        .page { margin-right: -1rem; padding-right: 1rem; }
         .intro-section { grid-template-columns: 1fr; gap: 1.5rem; }
         .bio-portrait-frame { max-width: 230px; margin: 0 auto; }
         .contact-item { flex-direction: column; align-items: flex-start; gap: 0.25rem; }
@@ -216,7 +229,7 @@ export default {
       /* Theme toggle: the moon (in its real current phase) in dark mode, the sun in light
          mode. It floats in the open sky left of the panel with a slow drift; on hover a thin
          circuit line draws out to a Light / Dark label. */
-      .moon-toggle { position: fixed; top: clamp(56px, 14vh, 170px); left: calc((100vw - 820px) / 4 - 17px); z-index: 0; width: 34px; height: 34px; padding: 0; border: none; border-radius: 50%; background: none; cursor: pointer; font: inherit; }
+      .moon-toggle { position: fixed; top: clamp(56px, 14vh, 170px); left: max(10px, calc((100vw - 820px) / 4 - 17px)); z-index: 0; width: 34px; height: 34px; padding: 0; border: none; border-radius: 50%; background: none; cursor: pointer; font: inherit; }
       .moon-toggle > svg { width: 100%; height: 100%; display: block; overflow: visible; transition: filter 0.2s ease; }
       .moon-toggle { animation: moon-drift 26s ease-in-out infinite; }
       @keyframes moon-drift {
@@ -480,7 +493,8 @@ export default {
 
   // A sparse field of ASCII stars across the whole page, behind the panel too, so
   // minimizing simply reveals the sky that was always there. Each star twinkles on its
-  // own cycle.
+  // own cycle. Moving between pages keeps the same sky: a taller page just gets more
+  // stars below; only a window resize redraws it.
   (() => {
     const sky = document.querySelector(".sky");
     if (!sky) return;
@@ -488,30 +502,129 @@ export default {
     const tints = ["", "", "", "", "t-bright", "t-yellow", "t-cyan", "t-violet"];
     const pick = (list) => list[Math.floor(Math.random() * list.length)];
     const PX_PER_STAR = 28500; // lower = denser
+    let filledTo = 0; // stars have been scattered down to this height
 
-    const build = () => {
-      sky.textContent = "";
-      sky.style.height = "0px"; // don't let the old layer inflate the page height
-      const w = document.documentElement.clientWidth;
-      const h = document.documentElement.scrollHeight;
-      sky.style.height = h + "px";
-      const count = Math.round((w * h) / PX_PER_STAR);
+    const scatter = (w, from, to) => {
+      const count = Math.round((w * (to - from)) / PX_PER_STAR);
       for (let i = 0; i < count; i++) {
         const star = document.createElement("span");
         star.className = ("star " + pick(tints)).trim();
         star.textContent = pick(glyphs);
         star.style.left = (Math.random() * (w - 10)).toFixed(0) + "px";
-        star.style.top = (Math.random() * (h - 16)).toFixed(0) + "px";
+        star.style.top = (from + Math.random() * (to - from - 16)).toFixed(0) + "px";
         const duration = 3 + Math.random() * 5;
         star.style.animationDuration = duration.toFixed(2) + "s";
         star.style.animationDelay = (-Math.random() * duration).toFixed(2) + "s";
         sky.appendChild(star);
       }
     };
+    // Match the sky to the page's height; returns [width, height].
+    const fit = () => {
+      sky.style.height = "0px"; // don't let the sky itself inflate the page height
+      const size = [document.documentElement.clientWidth, document.documentElement.scrollHeight];
+      sky.style.height = size[1] + "px";
+      return size;
+    };
+    const build = () => {
+      sky.textContent = "";
+      const [w, h] = fit();
+      scatter(w, 0, h);
+      filledTo = h;
+    };
+    const extend = () => {
+      const [w, h] = fit();
+      if (h > filledTo) { scatter(w, filledTo, h); filledTo = h; }
+    };
 
     build();
     let resizeTimer;
     addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(build, 250); });
+    addEventListener("pagechange", extend);
+  })();
+
+  // Page transitions: links within the site swap just the panel's content instead of
+  // loading a new page, so the sky, moon, clouds and any event in flight carry on as if
+  // live. The old content fades out, the panel eases to the new content's height, and
+  // the new content fades in. Anything unexpected falls back to a normal page load.
+  (() => {
+    const panel = document.querySelector(".container");
+    const nav = panel && panel.querySelector("nav");
+    const page = panel && panel.querySelector(".page");
+    if (!page || !nav || !window.fetch || !window.DOMParser || !history.pushState) return;
+    const root = document.documentElement;
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // Loaded normally: the admin page runs its own check; feeds and files aren't pages.
+    const NORMAL_LOAD = (p) => p.startsWith("/admin") || p.startsWith("/assets/") || /[.](xml|png|jpe?g|gif|webp|svg|pdf|zip|txt)$/i.test(p);
+    const EASE = "cubic-bezier(0.2, 0.8, 0.2, 1)";
+
+    // Fade the current content out; it stays hidden until the new content replaces it.
+    let fading = null;
+    const fadeOut = () => {
+      if (reduced || !page.childElementCount) return Promise.resolve();
+      fading = page.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 110, easing: "ease-in", fill: "forwards" });
+      return fading.finished.catch(() => {});
+    };
+    // Ease the panel from its old height to the new one, and fade the new content in.
+    const settle = (fromHeight) => {
+      if (fading) { fading.cancel(); fading = null; }
+      if (reduced) return;
+      const toHeight = panel.offsetHeight;
+      if (Math.abs(toHeight - fromHeight) > 1) {
+        panel.animate([{ height: fromHeight + "px" }, { height: toHeight + "px" }], { duration: 260, easing: EASE });
+      }
+      if (page.childElementCount) {
+        page.animate([{ opacity: 0, transform: "translateY(6px)" }, { opacity: 1, transform: "none" }], { duration: 240, delay: 40, easing: "ease-out", fill: "backwards" });
+      }
+    };
+
+    let current = location.pathname + location.search, request = null;
+    const go = async (url, push) => {
+      if (request) request.abort();
+      const ctrl = new AbortController();
+      request = ctrl;
+      let doc;
+      try {
+        const [res] = await Promise.all([fetch(url, { signal: ctrl.signal }), fadeOut()]);
+        if (!(res.headers.get("content-type") || "").includes("text/html")) throw new Error("not a page");
+        doc = new DOMParser().parseFromString(await res.text(), "text/html");
+        if (!doc.querySelector(".container nav") || !doc.querySelector(".container .page")) throw new Error("not one of our pages");
+      } catch (err) {
+        if (err.name !== "AbortError") location.href = url;
+        return;
+      }
+      request = null;
+      const next = doc.querySelector(".container");
+      if (push) history.pushState(null, "", url);
+      current = location.pathname + location.search;
+      document.title = doc.title;
+      const fromHeight = panel.offsetHeight;
+      // Swap the content under the nav; the nav itself stays (its buttons stay wired up).
+      page.replaceChildren(...[...next.querySelector(".page").childNodes].map((node) => document.importNode(node, true)));
+      panel.className = next.className;
+      // Mark the current page in the nav the way the server would.
+      const marks = new Map([...next.querySelectorAll("nav a[href]")].map((a) => [a.getAttribute("href"), a.getAttribute("aria-current")]));
+      nav.querySelectorAll("a[href]").forEach((a) => {
+        const mark = marks.get(a.getAttribute("href"));
+        if (mark) a.setAttribute("aria-current", mark); else a.removeAttribute("aria-current");
+      });
+      page.scrollTop = 0;
+      dispatchEvent(new CustomEvent("pagechange"));
+      settle(fromHeight);
+    };
+
+    document.addEventListener("click", (event) => {
+      const link = event.target.closest("a[href]");
+      if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      if ((link.target && link.target !== "_self") || link.hasAttribute("download") || root.classList.contains("is-minimized")) return;
+      const url = new URL(link.href, location.href);
+      if (url.origin !== location.origin || NORMAL_LOAD(url.pathname)) return;
+      if (url.pathname + url.search === current) { if (!url.hash) event.preventDefault(); return; } // same page
+      event.preventDefault();
+      go(url.href, true);
+    });
+    addEventListener("popstate", () => {
+      if (location.pathname + location.search !== current) go(location.href, false); // back/forward
+    });
   })();
 
   // Daytime clouds (light theme): ASCII clouds drifting slowly across the sky. Each has a
@@ -1311,17 +1424,20 @@ export default {
         </div>
         <a href="/projects" class="back-link" style="display: block; margin-top: 2rem;">← Back to Projects</a>`;
 
-    } else {
+    } else if (path === "/about") {
 
       // ==========================================
-      // HOME PAGE
+      // ABOUT ME
       // ==========================================
       content = `
         <div class="intro-section">
           <div class="bio-text">
             <h2>Trevor DeMelo</h2>
             <p>
-              Fascinated by computing from an early age, I spent hours in the environments of Windows and OS X, animating Flash cartoons and building my first websites from scratch. Now I provide Tier 1 and Tier 2 technical support across high-availability environments and medical-sector installations.
+              I've been messing with computers for as long as I can remember. As a kid, I couldn't leave anything alone. If a setting existed, I changed it. If something could be opened, I opened it. Usually I broke something. Usually I figured out how to fix it.
+            </p>
+            <p>
+              The curiosity never went away. It just turned into years of learning how things work, all the way down. I like taking apart hard problems, turning tedious chores into things that run themselves, and building stuff just to see if I can. If there's a better way to do something, I'll find it. Not because I have to. Because there's always something further in.
             </p>
             <p style="margin-top: 16px;">
               <a href="/projects" class="contact-link" style="padding-left:0;">View My Work &rarr;</a>
@@ -1357,6 +1473,10 @@ export default {
       `;
 
     }
+    // HOME ("/", and any other path): just the nav bar, so content stays empty.
+
+    // Highlights the current page in the nav.
+    const current = (href) => (path === href || (href === "/projects" && path.startsWith("/project")) ? ' aria-current="page"' : "");
 
     // Assemble the complete HTML document using the layout frame
     return new Response(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Trevor DeMelo | Portfolio</title><link rel="icon" type="image/svg+xml" href="/assets/duck.svg"><meta name="description" content="Trevor DeMelo, IT professional. Network administration, systems diagnostics, and Cloudflare Workers projects."><meta property="og:title" content="Trevor DeMelo | Portfolio"><meta property="og:description" content="IT professional. Network administration, systems diagnostics, and Cloudflare Workers projects."><meta property="og:type" content="website"><meta property="og:url" content="https://trevordemelo.com"><meta property="og:image" content="https://github.com/SleepyZip/mywebpage/blob/main/Assets/Images/AboutMe.png?raw=true"><script>try { if (localStorage.getItem("theme") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script><link rel="stylesheet" href="/assets/site.css"></head><body>
@@ -1364,11 +1484,12 @@ export default {
       <button type="button" class="moon-toggle" aria-label="Switch to light theme"><svg class="moon-art" viewBox="0 0 38 38" aria-hidden="true"><circle class="moon-disk" cx="19" cy="19" r="18.6"/><path class="moon-lit" d=""/></svg><svg class="sun-art" viewBox="0 0 38 38" aria-hidden="true"><circle cx="19" cy="19" r="8.5"/><path d="M19 2.5v5M19 30.5v5M2.5 19h5M30.5 19h5M7.3 7.3l3.5 3.5M27.2 27.2l3.5 3.5M7.3 30.7l3.5-3.5M27.2 10.8l3.5-3.5"/></svg><span class="moon-lead" aria-hidden="true"><svg viewBox="0 0 60 20"><path d="M1 1 L13 13 H55"/><circle cx="57" cy="13" r="2"/></svg></span><span class="moon-phase" aria-hidden="true"></span><span class="moon-label" aria-hidden="true"><span class="theme-word theme-word-light">Light</span><span class="theme-sep">/</span><span class="theme-word theme-word-dark">Dark</span></span></button>
       <div class="clouds" aria-hidden="true"></div>
       <div class="clock" aria-hidden="true"><span class="clock-zone clock-local-zone">CDT</span> <span class="clock-local">--:--:--</span><span class="clock-sep">&middot;</span><span class="clock-zone">UTC</span> <span class="clock-utc">--:--:--</span></div>
-      <div class="container">
+      <div class="container${content ? "" : " is-home"}">
         <nav>
           <div>
-            <a href="/">HOME</a>
-            <a href="/projects">PROJECTS</a>
+            <a href="/"${current("/")}>HOME</a>
+            <a href="/about"${current("/about")}>ABOUT</a>
+            <a href="/projects"${current("/projects")}>PROJECTS</a>
             <a href="/blog/">BLOG</a>
           </div>
           <div class="nav-right">
@@ -1376,7 +1497,7 @@ export default {
             <a href="/admin" class="nav-icon-btn portal-link" aria-label="Admin Portal"><span class="portal-a" aria-hidden="true">A</span><span class="portal-rest" aria-hidden="true">dmin Portal</span></a>
           </div>
         </nav>
-        ${content}
+        <div class="page">${content}</div>
       </div>
       <script src="/assets/site.js" defer></script>
     </body></html>`, { headers: { 'content-type': 'text/html;charset=UTF-8' } });

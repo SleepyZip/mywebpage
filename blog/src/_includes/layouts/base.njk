@@ -25,6 +25,7 @@
     <nav>
       <div>
         <a href="/">HOME</a>
+        <a href="/about">ABOUT</a>
         <a href="/projects">PROJECTS</a>
         <a href="{{ base }}/" aria-current="page">BLOG</a>
       </div>
@@ -33,7 +34,9 @@
         <a href="/admin" class="nav-icon-btn portal-link" aria-label="Admin Portal"><span class="portal-a" aria-hidden="true">A</span><span class="portal-rest" aria-hidden="true">dmin Portal</span></a>
       </div>
     </nav>
+    <div class="page">
     {{ content | safe }}
+    </div>
   </div>
   <script src="/assets/site.js" defer></script>
 </body>
