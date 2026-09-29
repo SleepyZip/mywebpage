@@ -34,8 +34,8 @@ export default {
         --bg: var(--base2); --panel: var(--base3); --bg-alt: var(--base2);
         --text: var(--base00); --text-emph: var(--base02); --muted: var(--base1);
         --border: var(--base1); --rule: var(--base2);
-        --shadow: rgba(38, 139, 210, 0.18);
-        --accent: var(--red);
+        --shadow: rgba(220, 50, 47, 0.16);
+        --accent: var(--red); --accent-2: var(--orange);
         color-scheme: light;
       }
 
@@ -98,7 +98,7 @@ export default {
       @media (prefers-reduced-motion: reduce) { .portal-rest { transition: none; } }
       /* Minimize: collapses the panel into a small corner tile around this button, and back */
       .nav-icon-btn.min-toggle { width: auto; min-width: 20px; display: inline-flex; align-items: center; justify-content: center; padding: 0 3px; font: inherit; font-size: 0.8rem; font-weight: bold; line-height: 1; color: var(--text-emph); }
-      .min-toggle svg { fill: none; stroke: var(--cyan); stroke-width: 2; stroke-linecap: square; }
+      .min-toggle svg { fill: none; stroke: var(--accent-2); stroke-width: 2; stroke-linecap: square; }
       .min-toggle .icon-restore, .is-minimized .min-toggle .icon-min { display: none; }
       .is-minimized .min-toggle .icon-restore { display: block; }
       .min-rest { max-width: 0; overflow: hidden; white-space: nowrap; transition: max-width 0.25s ease, margin 0.25s ease; }
@@ -121,6 +121,7 @@ export default {
       .bio-portrait-frame { border: 2px solid var(--border); background: var(--bg-alt); padding: 6px; box-shadow: 6px 6px 0 var(--shadow); }
       .portrait-container { overflow: hidden; display: flex; justify-content: center; align-items: center; }
       .portrait-container img { width: 100%; height: auto; display: block; }
+      :root[data-theme="light"] .portrait-container img { filter: url(#portrait-ink); }
 
       .section-divider { border: none; border-top: 2px dashed var(--rule); margin: 2.5rem 0; width: 100%; }
       .contact-section h3 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem; color: var(--muted); }
@@ -206,7 +207,7 @@ export default {
       .post-body table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); }
       .post-body th, .post-body td { padding: 0.5rem; text-align: left; border-bottom: 1px solid var(--border); }
       .post-body mark { background: color-mix(in srgb, var(--yellow) 30%, transparent); color: inherit; padding: 0 2px; }
-      .callout { --callout: var(--blue); border: 1px solid var(--callout); border-left-width: 4px; background: color-mix(in srgb, var(--callout) 8%, var(--panel)); padding: 0.75rem 1rem; }
+      .callout { --callout: var(--accent); border: 1px solid var(--callout); border-left-width: 4px; background: color-mix(in srgb, var(--callout) 8%, var(--panel)); padding: 0.75rem 1rem; }
       .callout > * + * { margin-top: 0.6rem; }
       .callout-title { font-weight: bold; color: var(--callout); margin-bottom: 0; }
       .callout-tip, .callout-success, .callout-check, .callout-done { --callout: var(--green); }
@@ -259,20 +260,22 @@ export default {
       .moon-art { filter: drop-shadow(0 0 7px color-mix(in srgb, var(--base2) 30%, transparent)); }
       .moon-art .moon-disk { fill: var(--base02); stroke: var(--base01); stroke-width: 0.6; }
       .moon-art .moon-lit { fill: var(--base2); }
-      .moon-toggle .sun-art { display: none; filter: drop-shadow(0 0 6px color-mix(in srgb, var(--yellow) 45%, transparent)); }
-      .sun-art circle { fill: var(--yellow); }
-      .sun-art path { fill: none; stroke: var(--yellow); stroke-width: 2.2; stroke-linecap: round; }
+      .moon-toggle .sun-art { display: none; overflow: visible; filter: drop-shadow(0 0 6px color-mix(in srgb, var(--red) 40%, transparent)); }
+      .sun-art circle { fill: var(--red); }
+      .sun-rays { transform-box: view-box; transform-origin: 19px 19px; animation: sun-spin 90s linear infinite; }
+      .sun-rays text { fill: var(--red); font: bold 9px ui-monospace, "Cascadia Code", Consolas, monospace; text-anchor: middle; dominant-baseline: central; }
+      @keyframes sun-spin { to { transform: rotate(360deg); } }
       :root[data-theme="light"] .moon-toggle .moon-art { display: none; }
       :root[data-theme="light"] .moon-toggle .sun-art { display: block; }
       .moon-toggle:hover .moon-art, .moon-toggle:focus-visible .moon-art { filter: drop-shadow(0 0 11px color-mix(in srgb, var(--base2) 55%, transparent)); }
-      .moon-toggle:hover .sun-art, .moon-toggle:focus-visible .sun-art { filter: drop-shadow(0 0 10px color-mix(in srgb, var(--yellow) 70%, transparent)); }
+      .moon-toggle:hover .sun-art, .moon-toggle:focus-visible .sun-art { filter: drop-shadow(0 0 10px color-mix(in srgb, var(--red) 65%, transparent)); }
       .moon-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
       .moon-toggle:hover, .moon-toggle:focus-visible { z-index: 4; } /* above clouds and the panel while its label shows */
       .moon-lead { position: absolute; left: 28px; top: 20px; width: 60px; height: 20px; pointer-events: none; }
       .moon-lead svg { width: 100%; height: 100%; display: block; overflow: visible; }
-      .moon-lead path { fill: none; stroke: var(--cyan); stroke-width: 1.2; stroke-dasharray: 70; stroke-dashoffset: 70; transition: stroke-dashoffset 0.3s ease; }
-      .moon-lead circle { fill: var(--cyan); opacity: 0; transition: opacity 0.15s ease; }
-      .moon-label { position: absolute; left: 90px; top: 24px; display: inline-flex; align-items: center; white-space: nowrap; font-size: 0.8rem; font-weight: bold; line-height: 1; padding: 2px 3px; background: var(--panel); border: 1px solid var(--cyan); box-shadow: 2px 2px 0 var(--shadow); opacity: 0; transform: translateX(-4px); transition: opacity 0.15s ease, transform 0.15s ease; pointer-events: none; }
+      .moon-lead path { fill: none; stroke: var(--accent-2); stroke-width: 1.2; stroke-dasharray: 70; stroke-dashoffset: 70; transition: stroke-dashoffset 0.3s ease; }
+      .moon-lead circle { fill: var(--accent-2); opacity: 0; transition: opacity 0.15s ease; }
+      .moon-label { position: absolute; left: 90px; top: 24px; display: inline-flex; align-items: center; white-space: nowrap; font-size: 0.8rem; font-weight: bold; line-height: 1; padding: 2px 3px; background: var(--panel); border: 1px solid var(--accent-2); box-shadow: 2px 2px 0 var(--shadow); opacity: 0; transform: translateX(-4px); transition: opacity 0.15s ease, transform 0.15s ease; pointer-events: none; }
       .moon-phase { position: absolute; left: 91px; top: 9px; white-space: nowrap; font-size: 10px; line-height: 1; letter-spacing: 0.03em; color: var(--base1); opacity: 0; transform: translateX(-4px); transition: opacity 0.15s ease, transform 0.15s ease; pointer-events: none; }
       .sky-blood-moon .moon-phase { color: var(--orange); }
       :root[data-theme="light"] .moon-phase { display: none; }
@@ -290,7 +293,7 @@ export default {
 
       /* Tiny CDT / UTC clock pinned to the bottom-left, mirroring the moon up top. */
       .clock { position: fixed; left: 14px; bottom: 10px; z-index: 3; font-size: 10.5px; line-height: 1; letter-spacing: 0.04em; color: var(--base01); white-space: nowrap; pointer-events: none; font-variant-numeric: tabular-nums; }
-      .clock-zone { color: var(--cyan); opacity: 0.75; }
+      .clock-zone { color: var(--accent-2); opacity: 0.75; }
       .clock-sep { margin: 0 0.4em; opacity: 0.6; }
       /* Where the panel reaches the corner (below ~1220px wide), give it a backing so it stays readable. */
       @media (max-width: 1220px) {
@@ -304,15 +307,15 @@ export default {
       .is-minimized .container * { visibility: hidden; }
       .is-minimized .container .min-toggle, .is-minimized .container .min-toggle * { visibility: visible; }
       .is-minimized .min-rest { max-width: 8em; margin-left: 6px; }
-      .is-minimized .nav-icon-btn.min-toggle { border-color: var(--cyan); animation: restore-pulse 2.6s ease-in-out infinite; }
+      .is-minimized .nav-icon-btn.min-toggle { border-color: var(--accent-2); animation: restore-pulse 2.6s ease-in-out infinite; }
       @keyframes restore-pulse {
-        0%, 100% { box-shadow: 0 0 0 color-mix(in srgb, var(--cyan) 0%, transparent); }
-        50% { box-shadow: 0 0 10px color-mix(in srgb, var(--cyan) 55%, transparent); }
+        0%, 100% { box-shadow: 0 0 0 color-mix(in srgb, var(--accent-2) 0%, transparent); }
+        50% { box-shadow: 0 0 10px color-mix(in srgb, var(--accent-2) 55%, transparent); }
       }
-      .container.is-animating { border-color: var(--cyan); }
+      .container.is-animating { border-color: var(--accent-2); }
       /* The [A] steps aside so it doesn't peek into the shrinking corner. */
       .container.is-animating .portal-link { visibility: hidden; }
-      .min-scan { position: absolute; height: 2px; right: 0; background: var(--cyan); box-shadow: 0 0 8px var(--cyan), 0 0 2px var(--cyan); pointer-events: none; z-index: 5; }
+      .min-scan { position: absolute; height: 2px; right: 0; background: var(--accent-2); box-shadow: 0 0 8px var(--accent-2), 0 0 2px var(--accent-2); pointer-events: none; z-index: 5; }
 
       /* Rare sky events (animated from site.js). One plays at a time. */
       .comet, .meteor, .satellite, .supernova, .supernova-ring, .firework { position: absolute; pointer-events: none; opacity: 0; }
@@ -356,7 +359,7 @@ export default {
       .birds { width: 0; height: 0; }
       .bird { position: absolute; width: 17px; height: 8px; overflow: visible; }
       .bird path { fill: none; stroke: var(--base01); stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; }
-      .leaf { font-size: 15px; line-height: 1; }
+      .leaf { font-size: 13px; line-height: 0.9; font-weight: bold; white-space: pre; }
       .day-plane { width: 0; height: 0; }
       .day-plane svg { position: absolute; left: -24px; top: -5px; width: 24px; height: 10px; fill: var(--base01); }
       .contrail { position: absolute; right: 24px; top: -1px; width: 280px; height: 2px; border-radius: 2px; background: linear-gradient(to left, var(--base3), transparent); }
@@ -377,6 +380,7 @@ export default {
       .sky-blood-moon .moon-toggle .moon-art { filter: drop-shadow(0 0 9px color-mix(in srgb, var(--red) 55%, transparent)); }
       @media (prefers-reduced-motion: reduce) {
         .wordmark { animation: none; opacity: 1; }
+        .sun-rays { animation: none; }
         .wordmark .wm-name, .wordmark .wm-rule { animation: none; transform: none; }
         .card { transition: none; }
         .card:hover { transform: none; }
@@ -387,7 +391,7 @@ export default {
         .rain-drop { animation: none; }
         .moon-lead path, .moon-lead circle, .moon-label, .moon-phase, .container, .min-rest { transition: none; }
         .moon-toggle { animation: none; }
-        .is-minimized .nav-icon-btn.min-toggle { animation: none; box-shadow: 0 0 8px color-mix(in srgb, var(--cyan) 45%, transparent); }
+        .is-minimized .nav-icon-btn.min-toggle { animation: none; box-shadow: 0 0 8px color-mix(in srgb, var(--accent-2) 45%, transparent); }
       }
     `;
 
@@ -827,7 +831,7 @@ export default {
     const hash = location.hash;
 
     // Chance of each event per check (about every 20s). Set one to 0 to turn it off.
-    const SKY_EVENTS = { meteor: 0.35, satellite: 0.10, airplane: 0.08, supernova: 0.05, comet: 0.05 };
+    const SKY_EVENTS = { meteor: 0.35, satellite: 0.30, airplane: 0.12, supernova: 0.05, comet: 0.05 };
     // Date-based extras.
     const HOLIDAYS = { meteorShowers: true, newYearFireworks: true, bloodMoon: true };
 
@@ -1051,16 +1055,21 @@ export default {
       glide(g, x1 - x0, rand(-0.1, 0.05) * h, rand(34000, 46000), done);
     };
 
-    // Leaves: a handful tumbling down on the breeze in autumn palette colors.
-    // A single ASCII glyph, colored per spawn, tumbling down like the other palette-accent
-    // glyphs on the site (stars, comet head).
-    const LEAF_COLORS = ["orange", "yellow", "red", "green"];
+    // Leaves: a handful of small ASCII leaves tumbling down on the breeze in warm palette colors.
+    const LEAF_COLORS = ["red", "orange", "yellow"];
+    const BS = String.fromCharCode(92), LF = String.fromCharCode(10);
+    const LEAF_ART = [
+      ["  /" + BS, " /|" + BS, " " + BS + "|/", "  |"],
+      ["  _", " ( " + BS, "  " + BS + "_)", "   " + BS],
+      [" _", "(" + BS + ")", " " + BS],
+    ].map((lines) => lines.join(LF));
     const leaves = (done) => {
       const v = view(), h = v.bottom - v.top, n = Math.floor(rand(3, 7));
       let left = n;
       for (let i = 0; i < n; i++) {
         setTimeout(() => {
-          const leaf = add("leaf", rand(0.05, 0.95) * v.w, v.top + rand(-0.05, 0.25) * h, "&");
+          const leaf = add("leaf", rand(0.05, 0.95) * v.w, v.top + rand(-0.05, 0.25) * h);
+          leaf.textContent = pick(LEAF_ART);
           leaf.style.color = "var(--" + pick(LEAF_COLORS) + ")";
           const fall = rand(0.35, 0.7) * h, drift = rand(-120, 120), spin = rand(-360, 360), frames = [];
           for (let k = 0; k <= 8; k++) {
@@ -1089,7 +1098,7 @@ export default {
 
     // Hot-air balloon: an ASCII block, colored per spawn, rising slowly from low in the
     // sky, drifting and swaying.
-    const BALLOON_COLORS = ["red", "yellow", "orange", "blue", "violet", "magenta"];
+    const BALLOON_COLORS = ["red", "orange", "yellow", "magenta"];
     const NL = String.fromCharCode(10);
     const BALLOON_ART = [" .-.", "(   )", " )-(", "  |", " [_]"].join(NL);
     const balloon = (done) => {
@@ -1125,7 +1134,7 @@ export default {
     };
 
     // Chance of each daytime event per check. Set one to 0 to turn it off.
-    const DAY_EVENTS = { birds: 0.28, leaves: 0.17, plane: 0.10, balloon: 0.05, migration: 0.04, rain: 0.10 };
+    const DAY_EVENTS = { birds: 0.28, leaves: 0.17, plane: 0.15, balloon: 0.05, migration: 0.04, rain: 0.10 };
     const isDay = () => root.dataset.theme === "light";
 
     const EVENTS = { meteor: meteors, satellite, airplane, supernova, comet, fireworks, birds, migration, leaves, plane: dayPlane, balloon, rain };
@@ -1460,6 +1469,12 @@ export default {
             <div class="portrait-container">
               <img src="https://raw.githubusercontent.com/SleepyZip/mywebpage/refs/heads/main/Assets/Images/AboutMe.webp" width="480" height="640" alt="Trevor DeMelo Self-portrait Sketch">
             </div>
+            <!-- Light theme: redraw the sketch as Solarized red ink (#dc322f) on base3 paper (#fdf6e3).
+                 Levels are stretched so the paper goes fully white, then darkness maps from paper to ink. -->
+            <svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="portrait-ink" color-interpolation-filters="sRGB">
+              <feComponentTransfer><feFuncR type="linear" slope="1.15" intercept="-0.1"/><feFuncG type="linear" slope="1.15" intercept="-0.1"/><feFuncB type="linear" slope="1.15" intercept="-0.1"/></feComponentTransfer>
+              <feColorMatrix type="matrix" values="0.0274 0.0923 0.0093 0 0.863  0.1635 0.5500 0.0555 0 0.196  0.1501 0.5049 0.0510 0 0.184  0 0 0 1 0"/>
+            </filter></svg>
           </div>
         </div>
 
@@ -1495,7 +1510,7 @@ export default {
     return new Response(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Trevor DeMelo | Portfolio</title><link rel="icon" type="image/svg+xml" href="/assets/duck.svg"><meta name="description" content="Trevor DeMelo, IT professional. Network administration, systems diagnostics, and Cloudflare Workers projects."><meta property="og:title" content="Trevor DeMelo | Portfolio"><meta property="og:description" content="IT professional. Network administration, systems diagnostics, and Cloudflare Workers projects."><meta property="og:type" content="website"><meta property="og:url" content="https://trevordemelo.com"><meta property="og:image" content="https://github.com/SleepyZip/mywebpage/blob/main/Assets/Images/AboutMe.png?raw=true"><script>try { if (localStorage.getItem("theme") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300&display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/site.css"></head><body>
       <div class="wordmark" aria-hidden="true"><span class="wm-name">Trevor DeMelo</span><span class="wm-rule"></span></div>
       <div class="sky" aria-hidden="true"></div>
-      <button type="button" class="moon-toggle" aria-label="Switch to light theme"><svg class="moon-art" viewBox="0 0 38 38" aria-hidden="true"><circle class="moon-disk" cx="19" cy="19" r="18.6"/><path class="moon-lit" d=""/></svg><svg class="sun-art" viewBox="0 0 38 38" aria-hidden="true"><circle cx="19" cy="19" r="8.5"/><path d="M19 2.5v5M19 30.5v5M2.5 19h5M30.5 19h5M7.3 7.3l3.5 3.5M27.2 27.2l3.5 3.5M7.3 30.7l3.5-3.5M27.2 10.8l3.5-3.5"/></svg><span class="moon-lead" aria-hidden="true"><svg viewBox="0 0 60 20"><path d="M1 1 L13 13 H55"/><circle cx="57" cy="13" r="2"/></svg></span><span class="moon-phase" aria-hidden="true"></span><span class="moon-label" aria-hidden="true"><span class="theme-word theme-word-light">Light</span><span class="theme-sep">/</span><span class="theme-word theme-word-dark">Dark</span></span></button>
+      <button type="button" class="moon-toggle" aria-label="Switch to light theme"><svg class="moon-art" viewBox="0 0 38 38" aria-hidden="true"><circle class="moon-disk" cx="19" cy="19" r="18.6"/><path class="moon-lit" d=""/></svg><svg class="sun-art" viewBox="0 0 38 38" aria-hidden="true"><circle cx="19" cy="19" r="8"/><g class="sun-rays"><text x="19" y="4.5">|</text><text x="29.3" y="8.7">/</text><text x="33.5" y="19">-</text><text x="29.3" y="29.3">&#92;</text><text x="19" y="33.5">|</text><text x="8.7" y="29.3">/</text><text x="4.5" y="19">-</text><text x="8.7" y="8.7">&#92;</text></g></svg><span class="moon-lead" aria-hidden="true"><svg viewBox="0 0 60 20"><path d="M1 1 L13 13 H55"/><circle cx="57" cy="13" r="2"/></svg></span><span class="moon-phase" aria-hidden="true"></span><span class="moon-label" aria-hidden="true"><span class="theme-word theme-word-light">Light</span><span class="theme-sep">/</span><span class="theme-word theme-word-dark">Dark</span></span></button>
       <div class="clouds" aria-hidden="true"></div>
       <div class="clock" aria-hidden="true"><span class="clock-zone clock-local-zone">CDT</span> <span class="clock-local">--:--:--</span><span class="clock-sep">&middot;</span><span class="clock-zone">UTC</span> <span class="clock-utc">--:--:--</span></div>
       <div class="container${content ? "" : " is-home"}">
