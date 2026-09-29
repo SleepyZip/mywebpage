@@ -217,7 +217,7 @@ export default {
       /* ASCII star field in the page background (behind the panel).
          Palette only: mostly base01, a few base1 / yellow / cyan / violet. */
       .container { position: relative; z-index: 1; }
-      .sky { position: absolute; top: 0; left: 0; width: 100%; z-index: 0; pointer-events: none; overflow: hidden; }
+      .sky { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
       .star { position: absolute; font-size: 14px; line-height: 1; color: var(--base01); opacity: 0.1; animation: twinkle 5s ease-in-out infinite; will-change: opacity, transform; }
       .star.t-bright { color: var(--base1); }
       .star.t-yellow { color: var(--yellow); }
@@ -392,14 +392,6 @@ export default {
     // Shared page script, served at /assets/site.js: the moon theme toggle, Minimize, the
     // clock, and the night sky (stars, constellations, and rare events).
     const siteJs = `
-  // The panel's footprint in page coordinates, padded to cover its offset shadow.
-  // While the page is minimized, that's just the small corner tile.
-  function skyPanelBox(panel) {
-    const r = panel.getBoundingClientRect();
-    const min = document.documentElement.classList.contains("is-minimized");
-    return { l: (min ? r.right - 44 : r.left) + scrollX - 14, r: r.right + scrollX + 14, t: r.top + scrollY - 14, b: (min ? r.top + 44 : r.bottom) + scrollY + 14 };
-  }
-
   // Theme toggle: the moon in dark mode (drawn in tonight's real phase), the sun in
   // light mode. Dark by default; the choice is remembered per browser.
   (() => {
@@ -520,10 +512,9 @@ export default {
     setTimeout(() => { tick(); setInterval(tick, 1000); }, 1000 - (Date.now() % 1000)); // tick on the second
   })();
 
-  // A sparse field of ASCII stars across the whole page, behind the panel too, so
-  // minimizing simply reveals the sky that was always there. Each star twinkles on its
-  // own cycle. Moving between pages keeps the same sky: a taller page just gets more
-  // stars below; only a window resize redraws it.
+  // A sparse field of ASCII stars filling the window. The panel just sits on top of it;
+  // the sky never changes with the page, minimizing, or navigation, only a window resize
+  // redraws it. Each star twinkles on its own cycle.
   (() => {
     const sky = document.querySelector(".sky");
     if (!sky) return;
@@ -531,44 +522,27 @@ export default {
     const tints = ["", "", "", "", "t-bright", "t-yellow", "t-cyan", "t-violet"];
     const pick = (list) => list[Math.floor(Math.random() * list.length)];
     const PX_PER_STAR = 28500; // lower = denser
-    let filledTo = 0; // stars have been scattered down to this height
 
-    const scatter = (w, from, to) => {
-      const count = Math.round((w * (to - from)) / PX_PER_STAR);
+    const build = () => {
+      sky.textContent = "";
+      const w = document.documentElement.clientWidth, h = innerHeight;
+      const count = Math.round((w * h) / PX_PER_STAR);
       for (let i = 0; i < count; i++) {
         const star = document.createElement("span");
         star.className = ("star " + pick(tints)).trim();
         star.textContent = pick(glyphs);
         star.style.left = (Math.random() * (w - 10)).toFixed(0) + "px";
-        star.style.top = (from + Math.random() * (to - from - 16)).toFixed(0) + "px";
+        star.style.top = (Math.random() * (h - 16)).toFixed(0) + "px";
         const duration = 3 + Math.random() * 5;
         star.style.animationDuration = duration.toFixed(2) + "s";
         star.style.animationDelay = (-Math.random() * duration).toFixed(2) + "s";
         sky.appendChild(star);
       }
     };
-    // Match the sky to the page's height; returns [width, height].
-    const fit = () => {
-      sky.style.height = "0px"; // don't let the sky itself inflate the page height
-      const size = [document.documentElement.clientWidth, document.documentElement.scrollHeight];
-      sky.style.height = size[1] + "px";
-      return size;
-    };
-    const build = () => {
-      sky.textContent = "";
-      const [w, h] = fit();
-      scatter(w, 0, h);
-      filledTo = h;
-    };
-    const extend = () => {
-      const [w, h] = fit();
-      if (h > filledTo) { scatter(w, filledTo, h); filledTo = h; }
-    };
 
     build();
     let resizeTimer;
     addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(build, 250); });
-    addEventListener("pagechange", extend);
   })();
 
   // Page transitions: links within the site swap just the panel's content instead of
@@ -637,7 +611,6 @@ export default {
         if (mark) a.setAttribute("aria-current", mark); else a.removeAttribute("aria-current");
       });
       page.scrollTop = 0;
-      dispatchEvent(new CustomEvent("pagechange"));
       settle(fromHeight);
     };
 
@@ -715,12 +688,11 @@ export default {
     addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(build, 300); });
   })();
 
-  // Constellations: every 20-40s one fades in over the open background (never behind
-  // the panel), drawn from real star positions so the shapes are true to the sky.
+  // Constellations: every 20-40s one fades in somewhere in the sky, drawn from real star
+  // positions so the shapes are true to the sky.
   (() => {
     const sky = document.querySelector(".sky");
-    const panel = document.querySelector(".container");
-    if (!sky || !panel || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!sky || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     // Stars: [right ascension (hours), declination (degrees), magnitude, color?]
     // Lines: pairs of star indexes.
@@ -788,23 +760,20 @@ export default {
       const con = next();
       const pts = project(con.stars);
       const spanX = Math.max(...pts.map((p) => p[0])), spanY = Math.max(...pts.map((p) => p[1]));
-      const box = skyPanelBox(panel);
       const w = document.documentElement.clientWidth;
-      const top = scrollY + 8, bottom = scrollY + innerHeight - 8;
+      const top = 8, bottom = innerHeight - 8;
 
-      // Largest scale (px per degree) that fits somewhere in the visible open background.
+      // Largest scale (px per degree) that fits in the window.
       for (const scale of [9, 8, 7, 6, 5]) {
         const gw = spanX * scale + PAD * 2, gh = spanY * scale + PAD * 2;
         if (gh > bottom - top) continue;
-        for (let tries = 0; tries < 40; tries++) {
-          const x = 8 + Math.random() * (w - gw - 16);
-          const y = top + Math.random() * (bottom - top - gh);
-          if (x < 0 || (x < box.r && x + gw > box.l && y < box.b && y + gh > box.t)) continue;
-          draw(con, pts, scale, x, y, gw, gh);
-          return schedule();
-        }
+        if (gw > w - 16) continue;
+        const x = 8 + Math.random() * (w - gw - 16);
+        const y = top + Math.random() * (bottom - top - gh);
+        draw(con, pts, scale, x, y, gw, gh);
+        return schedule();
       }
-      schedule(); // no room this time (e.g. narrow screens); try again later
+      schedule(); // too big for this window at any scale; try another later
     };
 
     const draw = (con, pts, scale, x, y, gw, gh) => {
@@ -851,8 +820,7 @@ export default {
   // preview the holidays.
   (() => {
     const sky = document.querySelector(".sky");
-    const panel = document.querySelector(".container");
-    if (!sky || !panel) return;
+    if (!sky) return;
     const root = document.documentElement;
     const hash = location.hash;
 
@@ -881,9 +849,8 @@ export default {
     const rand = (a, b) => a + Math.random() * (b - a);
     const pick = (list) => list[Math.floor(Math.random() * list.length)];
 
-    // Panel footprint and the visible part of the page, in page coordinates.
-    const view = () => ({ box: skyPanelBox(panel), w: root.clientWidth, top: scrollY, bottom: scrollY + innerHeight });
-    const inPanel = (v, x, y) => x > v.box.l && x < v.box.r && y > v.box.t && y < v.box.b;
+    // The window, which is the whole sky.
+    const view = () => ({ w: root.clientWidth, top: 0, bottom: innerHeight });
     const add = (cls, x, y, html) => {
       const el = document.createElement("div");
       el.className = cls;
@@ -894,18 +861,12 @@ export default {
       sky.appendChild(el);
       return el;
     };
-    // A random spot in the open, visible background (null if there's no room).
-    const openSpot = (v, topShare) => {
-      for (let tries = 0; tries < 50; tries++) {
-        const x = rand(20, v.w - 20), y = rand(v.top + 20, v.top + (v.bottom - v.top) * topShare);
-        if (!inPanel(v, x, y)) return [x, y];
-      }
-      return null;
-    };
+    // A random spot in the upper topShare of the sky.
+    const randomSpot = (v, topShare) => [rand(20, v.w - 20), rand(v.top + 20, v.top + (v.bottom - v.top) * topShare)];
 
     // Shooting star: a quick, bright streak. During a meteor shower they fan out from the
     // shower's radiant (a fixed point for this page view) and arrive in small bursts.
-    const radiant = { x: rand(0.2, 0.8) * root.clientWidth, y: scrollY + rand(0.05, 0.3) * innerHeight };
+    const radiant = { x: rand(0.2, 0.8) * root.clientWidth, y: rand(0.05, 0.3) * innerHeight };
     const meteor = (fromRadiant) => {
       const v = view();
       let x, y, angle;
@@ -959,11 +920,10 @@ export default {
       }
     };
 
-    // Supernova: a star in the open sky swells to a blazing point with a faint shockwave
+    // Supernova: a star somewhere in the sky swells to a blazing point with a faint shockwave
     // ring, holds, then fades away.
     const supernova = (done) => {
-      const v = view(), spot = openSpot(v, 0.9);
-      if (!spot) return done();
+      const spot = randomSpot(view(), 0.9);
       const star = add("supernova", spot[0], spot[1], "*");
       const ring = add("supernova-ring", spot[0], spot[1]);
       const c = "translate(-50%, -50%) ";
@@ -999,7 +959,7 @@ export default {
       ], { duration: rand(35000, 50000), easing: "linear" }).onfinish = () => { p.remove(); done(); };
     };
 
-    // Comet: glides slowly across the visible sky on a shallow diagonal, behind the panel.
+    // Comet: glides slowly across the sky on a shallow diagonal.
     const comet = (done) => {
       const v = view(), h = v.bottom - v.top;
       const leftToRight = Math.random() < 0.5;
@@ -1018,9 +978,8 @@ export default {
     // Fireworks (Dec 30 - Jan 1): a short show of rockets bursting into palette colors.
     const COLORS = ["yellow", "orange", "red", "magenta", "violet", "blue", "cyan", "green"];
     const burst = () => {
-      const v = view(), spot = openSpot(v, 0.55);
-      if (!spot) return;
-      const [x, y] = spot, color = "var(--" + pick(COLORS) + ")";
+      const v = view();
+      const [x, y] = randomSpot(v, 0.55), color = "var(--" + pick(COLORS) + ")";
       const rocket = add("firework", x, v.bottom - 10, "'");
       rocket.style.color = color;
       rocket.animate([
