@@ -46,15 +46,17 @@ export default {
       /* Background wordmark: fades in once on load, sits behind the panel (z-index 0 vs
          the panel's 1) and stays put, so a taller panel naturally covers more of it as
          pages open. */
-      .wordmark { position: fixed; top: clamp(210px, 30vh, 340px); left: 0; width: 100%; transform: translate(0, -50%) rotate(-12deg); z-index: 0; padding: 0 1rem; display: flex; flex-direction: column; align-items: center; font-family: "Jost", sans-serif; font-weight: 300; letter-spacing: 0.06em; color: var(--text-emph); pointer-events: none; opacity: 0; animation: wordmark-in 0.9s ease-out 0.15s forwards; transition: transform 0.4s ease-out; }
-      .wordmark span { display: block; line-height: 1; white-space: nowrap; }
-      .wordmark .wm-first { font-size: clamp(2.75rem, 10vw, 7rem); transform: translateX(-0.5em); }
-      .wordmark .wm-second { font-size: clamp(2.75rem, 10vw, 7rem); margin-top: 0.05em; transform: translateX(0.7em); }
-      @keyframes wordmark-in { to { opacity: 0.6; } }
+      .wordmark { position: fixed; top: clamp(200px, 30vh, 320px); left: 0; width: 100%; transform: translate(0, -50%); z-index: 0; padding: 0 1rem; display: flex; flex-direction: column; align-items: center; font-family: "Jost", sans-serif; font-weight: 300; pointer-events: none; opacity: 0; animation: wordmark-in 1.4s ease-out 0.15s forwards; --wm-grad: linear-gradient(90deg, var(--cyan), var(--blue), var(--violet), var(--blue), var(--cyan)); }
+      :root[data-theme="light"] .wordmark { --wm-grad: linear-gradient(90deg, var(--orange), var(--red), var(--magenta), var(--red), var(--orange)); }
+      /* The negative right margin cancels the trailing letter-spacing so the name stays centered. */
+      .wordmark .wm-name { font-size: clamp(2rem, 6vw, 4.4rem); line-height: 1.1; letter-spacing: 0.08em; margin-right: -0.08em; white-space: nowrap; background: var(--wm-grad); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: wordmark-track 1.8s cubic-bezier(0.2, 0.7, 0.2, 1) 0.15s both, wordmark-hue 18s ease-in-out infinite alternate; }
+      .wordmark .wm-rule { width: min(520px, 70vw); height: 1px; margin-top: 1.1rem; background: var(--wm-grad); background-size: 200% 100%; opacity: 0.6; transform: scaleX(0); animation: wordmark-rule 1.2s cubic-bezier(0.2, 0.7, 0.2, 1) 0.8s forwards, wordmark-hue 18s ease-in-out infinite alternate; }
+      @keyframes wordmark-in { to { opacity: 1; } }
+      @keyframes wordmark-hue { to { background-position: 100% 0; } }
+      @keyframes wordmark-track { from { letter-spacing: -0.02em; margin-right: 0.02em; } }
+      @keyframes wordmark-rule { to { transform: scaleX(1); } }
       @media (max-width: 680px) {
-        .wordmark .wm-first, .wordmark .wm-second { font-size: clamp(2.1rem, 13vw, 3.5rem); }
-        .wordmark .wm-first { transform: translateX(-0.3em); }
-        .wordmark .wm-second { transform: translateX(0.4em); }
+        .wordmark .wm-name { font-size: clamp(1.6rem, 9vw, 2.4rem); }
       }
 
       /* The panel: bordered card with the offset shadow block behind it */
@@ -372,7 +374,8 @@ export default {
       .sky-blood-moon .moon-toggle .moon-art .moon-disk { fill: color-mix(in srgb, var(--red) 40%, var(--base02)); stroke: var(--red); }
       .sky-blood-moon .moon-toggle .moon-art { filter: drop-shadow(0 0 9px color-mix(in srgb, var(--red) 55%, transparent)); }
       @media (prefers-reduced-motion: reduce) {
-        .wordmark { animation: none; opacity: 0.6; }
+        .wordmark { animation: none; opacity: 1; }
+        .wordmark .wm-name, .wordmark .wm-rule { animation: none; transform: none; }
         .card { transition: none; }
         .card:hover { transform: none; }
         .star { animation: none; opacity: 0.35; }
@@ -437,22 +440,6 @@ export default {
       label();
       dispatchEvent(new CustomEvent("themechange")); // swaps the night sky for the day scene
     });
-  })();
-
-  // Wordmark: drifts a few px opposite the cursor, like it's floating at a different depth than the page.
-  (() => {
-    const wm = document.querySelector(".wordmark");
-    if (!wm || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    let x = 0, y = 0, raf = null;
-    const apply = () => {
-      raf = null;
-      wm.style.transform = "translate(" + x + "px, calc(-50% + " + y + "px)) rotate(-12deg)";
-    };
-    addEventListener("mousemove", (e) => {
-      x = (e.clientX / innerWidth - 0.5) * -28;
-      y = (e.clientY / innerHeight - 0.5) * -20;
-      if (!raf) raf = requestAnimationFrame(apply);
-    }, { passive: true });
   })();
 
   // Minimize: the panel collapses upward into a glowing scan line, then folds into the
@@ -1545,7 +1532,7 @@ export default {
 
     // Assemble the complete HTML document using the layout frame
     return new Response(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Trevor DeMelo | Portfolio</title><link rel="icon" type="image/svg+xml" href="/assets/duck.svg"><meta name="description" content="Trevor DeMelo, IT professional. Network administration, systems diagnostics, and Cloudflare Workers projects."><meta property="og:title" content="Trevor DeMelo | Portfolio"><meta property="og:description" content="IT professional. Network administration, systems diagnostics, and Cloudflare Workers projects."><meta property="og:type" content="website"><meta property="og:url" content="https://trevordemelo.com"><meta property="og:image" content="https://github.com/SleepyZip/mywebpage/blob/main/Assets/Images/AboutMe.png?raw=true"><script>try { if (localStorage.getItem("theme") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300&display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/site.css"></head><body>
-      <div class="wordmark" aria-hidden="true"><span class="wm-first">Trevor</span><span class="wm-second">DeMelo</span></div>
+      <div class="wordmark" aria-hidden="true"><span class="wm-name">Trevor DeMelo</span><span class="wm-rule"></span></div>
       <div class="sky" aria-hidden="true"></div>
       <button type="button" class="moon-toggle" aria-label="Switch to light theme"><svg class="moon-art" viewBox="0 0 38 38" aria-hidden="true"><circle class="moon-disk" cx="19" cy="19" r="18.6"/><path class="moon-lit" d=""/></svg><svg class="sun-art" viewBox="0 0 38 38" aria-hidden="true"><circle cx="19" cy="19" r="8.5"/><path d="M19 2.5v5M19 30.5v5M2.5 19h5M30.5 19h5M7.3 7.3l3.5 3.5M27.2 27.2l3.5 3.5M7.3 30.7l3.5-3.5M27.2 10.8l3.5-3.5"/></svg><span class="moon-lead" aria-hidden="true"><svg viewBox="0 0 60 20"><path d="M1 1 L13 13 H55"/><circle cx="57" cy="13" r="2"/></svg></span><span class="moon-phase" aria-hidden="true"></span><span class="moon-label" aria-hidden="true"><span class="theme-word theme-word-light">Light</span><span class="theme-sep">/</span><span class="theme-word theme-word-dark">Dark</span></span></button>
       <div class="clouds" aria-hidden="true"></div>
