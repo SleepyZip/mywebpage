@@ -44,21 +44,18 @@ export default {
       html { overflow: hidden; }
       body { font-family: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace; font-size: 15px; background: var(--bg); color: var(--text); padding: 3rem 1rem; display: flex; justify-content: center; align-items: flex-start; height: 100vh; height: 100dvh; overflow: hidden; }
 
-      /* Background wordmark: fades in once on load, sits behind the panel (z-index 0 vs
-         the panel's 1) and stays put, so a taller panel naturally covers more of it as
-         pages open. */
-      .wordmark { position: fixed; top: clamp(200px, 30vh, 320px); left: 0; width: 100%; transform: translate(0, -50%); z-index: 0; padding: 0 1rem; display: flex; flex-direction: column; align-items: center; font-family: "Jost", sans-serif; font-weight: 300; pointer-events: none; opacity: 0; animation: wordmark-in 1.4s ease-out 0.15s forwards; --wm-grad: linear-gradient(90deg, var(--cyan), var(--blue), var(--violet), var(--blue), var(--cyan)); }
-      :root[data-theme="light"] .wordmark { --wm-grad: linear-gradient(90deg, var(--orange), var(--red), var(--magenta), var(--red), var(--orange)); }
-      /* The negative right margin cancels the trailing letter-spacing so the name stays centered. */
-      .wordmark .wm-name { font-size: clamp(2rem, 6vw, 4.4rem); line-height: 1.1; letter-spacing: 0.08em; margin-right: -0.08em; white-space: nowrap; background: var(--wm-grad); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: wordmark-track 1.8s cubic-bezier(0.2, 0.7, 0.2, 1) 0.15s both, wordmark-hue 18s ease-in-out infinite alternate; }
-      .wordmark .wm-rule { width: min(520px, 70vw); height: 1px; margin-top: 1.1rem; background: var(--wm-grad); background-size: 200% 100%; opacity: 0.6; transform: scaleX(0); animation: wordmark-rule 1.2s cubic-bezier(0.2, 0.7, 0.2, 1) 0.8s forwards, wordmark-hue 18s ease-in-out infinite alternate; }
-      @keyframes wordmark-in { to { opacity: 1; } }
-      @keyframes wordmark-hue { to { background-position: 100% 0; } }
-      @keyframes wordmark-track { from { letter-spacing: -0.02em; margin-right: 0.02em; } }
-      @keyframes wordmark-rule { to { transform: scaleX(1); } }
-      @media (max-width: 680px) {
-        .wordmark .wm-name { font-size: clamp(1.6rem, 9vw, 2.4rem); }
-      }
+      /* Signature: the name in the bottom-right corner inside the front layer of the cloud
+         bank, filled with the theme's gradient (deepened at night so it stands out against
+         the pale front clouds). site.js has each letter ride the cloud surface as it scrolls
+         by. Each letter carries its own slice of one shared gradient (--x is its offset in
+         the name), so the colors run continuously across the letters, flowing left like
+         the clouds. */
+      .signature { position: fixed; right: 18px; bottom: 8px; z-index: 0; font-family: "Jost", sans-serif; font-weight: 400; font-size: clamp(22px, 2.4vw, 32px); line-height: 1; letter-spacing: 0.06em; white-space: nowrap; pointer-events: none; opacity: 0; animation: fade-in 1.2s ease-out 0.4s forwards;
+        --sig-grad: linear-gradient(90deg, color-mix(in srgb, var(--cyan) 55%, var(--base03)), color-mix(in srgb, var(--blue) 55%, var(--base03)), color-mix(in srgb, var(--violet) 60%, var(--base03)), color-mix(in srgb, var(--blue) 55%, var(--base03)), color-mix(in srgb, var(--cyan) 55%, var(--base03))); }
+      :root[data-theme="light"] .signature { --sig-grad: linear-gradient(90deg, var(--orange), var(--red), var(--magenta), var(--red), var(--orange)); }
+      .signature span { display: inline-block; white-space: pre; will-change: transform; color: transparent; background-image: var(--sig-grad); background-size: 360px 100%; background-repeat: repeat-x; background-position: calc(-1 * var(--x, 0px)) 0; -webkit-background-clip: text; background-clip: text; animation: sig-flow 9s linear infinite; }
+      @keyframes sig-flow { to { background-position: calc(-1 * var(--x, 0px) - 360px) 0; } }
+      @keyframes fade-in { to { opacity: 1; } }
 
       /* The panel: bordered card with the offset shadow block behind it */
       .container { background: var(--panel); border: 2px solid var(--border); padding: 1.5rem 2.25rem 2.25rem; width: 100%; max-width: 820px; max-height: 100%; display: flex; flex-direction: column; overflow: hidden; box-shadow: 10px 10px 0 var(--shadow); }
@@ -229,8 +226,8 @@ export default {
       .star.t-cyan { color: var(--cyan); }
       .star.t-violet { color: var(--violet); }
       @keyframes twinkle {
-        0%, 100% { opacity: 0.08; transform: scale(0.85); }
-        50% { opacity: 0.7; transform: scale(1.1); }
+        0%, 100% { opacity: 0.15; transform: scale(0.85); }
+        50% { opacity: 0.9; transform: scale(1.1); }
       }
       /* Constellations: now and then one fades in over the open background, joined by
          thin lines, then fades out. A few stars carry their real color from the palette. */
@@ -293,15 +290,6 @@ export default {
         .moon-phase { left: 87px; top: 5px; }
       }
 
-      /* Tiny CDT / UTC clock pinned to the bottom-left, mirroring the moon up top. */
-      .clock { position: fixed; left: 14px; bottom: 10px; z-index: 3; font-size: 10.5px; line-height: 1; letter-spacing: 0.04em; color: var(--base01); white-space: nowrap; pointer-events: none; font-variant-numeric: tabular-nums; }
-      .clock-zone { color: var(--accent-2); opacity: 0.75; }
-      .clock-sep { margin: 0 0.4em; opacity: 0.6; }
-      /* Where the panel reaches the corner (below ~1220px wide), give it a backing so it stays readable. */
-      @media (max-width: 1220px) {
-        .clock { bottom: 6px; left: 8px; padding: 3px 6px; background: var(--bg); border: 1px solid var(--rule); }
-      }
-
       /* Minimized page: once the collapse animation (site.js) ends, the panel's frame fades
          away and only the Restore button is left, fully expanded and softly pulsing. */
       .container { transition: clip-path 0.3s ease, background-color 0.3s ease, border-color 0.3s ease; }
@@ -330,15 +318,24 @@ export default {
       .meteor::after { content: ""; position: absolute; right: -1.5px; top: -1.75px; width: 3px; height: 3px; border-radius: 50%; background: var(--meteor); box-shadow: 0 0 6px var(--meteor); }
       .sat-dot { position: absolute; left: -1.5px; top: -1.5px; width: 3px; height: 3px; border-radius: 50%; background: var(--base1); }
       :root[data-theme="light"] .sat-dot { background: var(--base01); }
-      /* Airplane: steady red and green wingtip lights either side of a white double-flash strobe */
-      .airplane { position: absolute; pointer-events: none; opacity: 0; width: 0; height: 0; }
+      /* Plane: one plane in both themes, seen from below: a silhouette trailing a contrail, with
+         steady red and green wingtip lights either side of a white double-flash strobe. By day
+         it's lit (silhouette and contrail, lights lost in the daylight); by night the dark hides
+         it (a faint shape and trail) and its lights show. Switching themes mid-flight fades
+         between the two, so it's the same plane, obscured by darkness or lit by daylight. */
+      .plane { position: absolute; pointer-events: none; opacity: 0; width: 0; height: 0; }
+      .plane svg { position: absolute; left: -24px; top: -5px; width: 24px; height: 10px; fill: var(--base02); opacity: 0.7; transition: fill 0.8s ease, opacity 0.8s ease; }
+      .plane .contrail { opacity: 0.12; transition: opacity 0.8s ease; }
+      .plane-lights { position: absolute; left: -15px; top: 0; transition: opacity 0.8s ease; }
+      :root[data-theme="light"] .plane svg { fill: var(--base01); opacity: 1; }
+      :root[data-theme="light"] .plane .contrail { opacity: 1; }
+      :root[data-theme="light"] .plane-lights { opacity: 0; }
       .plane-light { position: absolute; left: -1.5px; width: 3px; height: 3px; border-radius: 50%; }
       .plane-top { top: -5.5px; }
       .plane-bottom { top: 2.5px; }
       .plane-port { background: var(--red); box-shadow: 0 0 4px var(--red); }
       .plane-starboard { background: var(--green); box-shadow: 0 0 4px var(--green); }
-      .plane-strobe { --strobe: var(--base3); top: -1.5px; background: var(--strobe); opacity: 0; animation: plane-strobe 1.3s linear infinite; }
-      :root[data-theme="light"] .plane-strobe { --strobe: var(--base03); }
+      .plane-strobe { --strobe: var(--base3); left: 3px; top: -1.5px; background: var(--strobe); opacity: 0; animation: plane-strobe 1.3s linear infinite; }
       @keyframes plane-strobe {
         0%, 4%, 8%, 12%, 100% { opacity: 0; box-shadow: none; }
         2%, 10% { opacity: 1; box-shadow: 0 0 6px 1px var(--strobe); }
@@ -347,50 +344,86 @@ export default {
       :root[data-theme="light"] .supernova { color: var(--base01); }
       .supernova-ring { width: 18px; height: 18px; border: 1px solid var(--cyan); border-radius: 50%; }
       .firework { font-size: 15px; line-height: 1; font-weight: bold; }
-      /* Daytime (light theme): the night sky gives way to drifting ASCII clouds and the odd
-         bird, falling leaves, plane, hot-air balloon, or migrating flock. */
-      :root[data-theme="light"] :is(.star, .constellation, .comet, .meteor, .satellite, .supernova, .supernova-ring, .firework, .airplane) { display: none; }
-      :root:not([data-theme="light"]) :is(.cloud, .birds, .leaf, .day-plane, .balloon, .rain) { display: none; }
+      /* Daytime (light theme): the night sky gives way to the odd bird or migrating flock.
+         Drifting pixel clouds and planes show in both themes. */
+      :root[data-theme="light"] :is(.star, .constellation, .comet, .meteor, .satellite, .supernova, .supernova-ring, .firework) { display: none; }
+      :root:not([data-theme="light"]) .birds { display: none; }
       /* Clouds live in their own layer: above the sun and moon (so they can pass in front),
-         below the panel. Each is ASCII line art over a soft cream body. */
+         below the panel. Each is a pixel-art cloud like the cloud bank's (a shape mask over
+         one of its layer colors, set by depth), drifting left from off the right edge. */
       .clouds { position: absolute; top: 0; left: 0; width: 100%; height: 100vh; z-index: 0; overflow: hidden; pointer-events: none; }
-      .cloud { position: absolute; left: -320px; margin: 0; font: inherit; font-size: 13px; line-height: 1.15; color: var(--base1); white-space: pre; isolation: isolate; animation: cloud-drift 240s linear infinite; }
-      .cloud-body { position: absolute; z-index: -1; border-radius: 50%; background: var(--base3); filter: blur(2.5px); }
-      @keyframes cloud-drift { to { transform: translateX(calc(100vw + 640px)); } }
-      .birds, .leaf, .day-plane, .balloon, .rain { position: absolute; pointer-events: none; opacity: 0; }
-      .birds { width: 0; height: 0; }
+      .cloud { position: absolute; left: 100%; animation: cloud-drift 240s linear infinite; will-change: transform; }
+      /* The shape is its own layer, so the mask doesn't clip what rides along (the face, the snore box). */
+      .cloud-shape { position: absolute; inset: 0; background: var(--cb-color); -webkit-mask-size: 100% 100%; mask-size: 100% 100%; }
+      @keyframes cloud-drift { to { transform: translateX(calc(-100vw - 100%)); } }
+      /* One cloud has a sleepy face: a slightly deeper shade of its own color, so it's subtle. */
+      .cloud-face { position: absolute; color: color-mix(in srgb, var(--cb-color) 62%, var(--base03)); transition: color 0.8s ease; }
+      :root[data-theme="light"] .cloud-face { color: color-mix(in srgb, var(--cb-color) 72%, var(--base01)); }
+      .cloud-face svg { display: block; fill: currentColor; }
+      /* Now and then it dreams: a little thought bubble (in the moon label's colors) above
+         it, with two shrinking circles trailing down to the cloud. Animated from site.js. */
+      .cloud-bubble { position: absolute; bottom: calc(100% + 14px); left: 55%; padding: 4px 10px; font: bold 11px/1 ui-monospace, "Cascadia Code", Consolas, monospace; letter-spacing: 0.04em; white-space: nowrap; color: var(--text-emph); background: var(--panel); border: 1px solid var(--accent-2); border-radius: 999px; box-shadow: 2px 2px 0 var(--shadow); opacity: 0; }
+      .cloud-bubble::before, .cloud-bubble::after { content: ""; position: absolute; border-radius: 50%; background: var(--panel); border: 1px solid var(--accent-2); box-shadow: 1.5px 1.5px 0 var(--shadow); }
+      .cloud-bubble::before { left: 8px; top: calc(100% + 3px); width: 8px; height: 8px; }
+      .cloud-bubble::after { left: 3px; top: calc(100% + 13px); width: 5px; height: 5px; }
+      /* Sky_Whale (a visiting character): a distant pixel whale who swims in the cloud bank,
+         behind all but its farthest layer: he cruises along the cloud tops, spouts, then
+         breaches and dives, splashing up puffs of cloud. Muted colors (deep blues by night,
+         hazy blue-grays by day) so he reads as far away. Animated from site.js. */
+      .whale { position: absolute; left: 0; top: 0; pointer-events: none; will-change: transform;
+        --wh-body: color-mix(in srgb, var(--blue) 30%, var(--base02)); --wh-belly: color-mix(in srgb, var(--blue) 48%, var(--base02));
+        --wh-fin: color-mix(in srgb, var(--blue) 16%, var(--base03)); --wh-eye: var(--base03); --wh-freckle: color-mix(in srgb, var(--base1) 70%, var(--base02)); }
+      .whale svg { display: block; }
+      .whale .wB { fill: var(--wh-body); }
+      .whale .wL { fill: var(--wh-belly); }
+      .whale .wF { fill: var(--wh-fin); }
+      .whale .wE { fill: var(--wh-eye); }
+      .whale .wS { fill: var(--wh-freckle); }
+      .whale .wf-b, .whale.flap .wf-a { display: none; }
+      .whale.flap .wf-b { display: inline; }
+      .whale-puff { position: absolute; left: 0; top: 0; background: var(--cb-color); pointer-events: none; }
+      :root[data-theme="light"] .whale {
+        --wh-body: color-mix(in srgb, var(--blue) 38%, var(--base1)); --wh-belly: color-mix(in srgb, var(--blue) 22%, var(--base2));
+        --wh-fin: color-mix(in srgb, var(--blue) 40%, var(--base01)); --wh-eye: var(--base02); --wh-freckle: var(--base3); }
+      /* Cloud bank: layered pixel-art clouds along the bottom of the window (after Cave
+         Story's ending), drawn in site.js. Each layer's shape is a repeating mask over its
+         theme color and scrolls left one tile per loop: front fastest, back slowest. */
+      .cloudbank { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; opacity: 0; animation: fade-in 1.2s ease-out forwards; }
+      .cb-layer { position: absolute; left: 0; bottom: 0; width: calc(100% + var(--tile, 0px)); background: var(--cb-color); -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x; -webkit-mask-position: left bottom; mask-position: left bottom; animation: cb-scroll 60s linear infinite; will-change: transform; }
+      @keyframes cb-scroll { to { transform: translateX(calc(-1 * var(--tile, 0px))); } }
+      /* Switching themes fades every cloud between its night and day color. */
+      .cloud-shape, .cb-layer { transition: background-color 0.8s ease; }
+      .cb-0 { --cb-color: color-mix(in srgb, var(--blue) 12%, var(--base03)); }
+      .cb-1 { --cb-color: color-mix(in srgb, var(--blue) 36%, var(--base02)); }
+      .cb-2 { --cb-color: color-mix(in srgb, var(--blue) 55%, var(--base01)); }
+      .cb-3 { --cb-color: color-mix(in srgb, var(--blue) 60%, var(--base2)); }
+      /* By day the back layers are a cool blue-gray, darker than the sky, and the front one a
+         soft white, lighter than it, so no layer lands on the sky's own beige. */
+      :root[data-theme="light"] .cb-0 { --cb-color: color-mix(in srgb, var(--blue) 41%, var(--base2)); }
+      :root[data-theme="light"] .cb-1 { --cb-color: color-mix(in srgb, var(--blue) 29%, var(--base2)); }
+      :root[data-theme="light"] .cb-2 { --cb-color: color-mix(in srgb, var(--blue) 15%, var(--base2)); }
+      :root[data-theme="light"] .cb-3 { --cb-color: color-mix(in srgb, #fff 70%, var(--base3)); }
+      .birds { position: absolute; pointer-events: none; opacity: 0; width: 0; height: 0; }
       .bird { position: absolute; width: 17px; height: 8px; overflow: visible; }
       .bird path { fill: none; stroke: var(--base01); stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; }
-      .leaf { font-size: 13px; line-height: 0.9; font-weight: bold; white-space: pre; }
-      .day-plane { width: 0; height: 0; }
-      .day-plane svg { position: absolute; left: -24px; top: -5px; width: 24px; height: 10px; fill: var(--base01); }
       .contrail { position: absolute; right: 24px; top: -1px; width: 280px; height: 2px; border-radius: 2px; background: linear-gradient(to left, var(--base3), transparent); }
-      .balloon pre { font: inherit; font-size: 15px; line-height: 1.05; white-space: pre; }
-      /* Rain shower: a loose cluster of falling streaks drifts across the sky. */
-      .rain { width: 0; height: 0; }
-      .rain-drops { position: absolute; left: -4px; top: 0px; width: 70px; height: 36px; overflow: visible; }
-      .rain-drop { position: absolute; top: 0; width: 1.5px; height: 9px; border-radius: 1px; background: linear-gradient(var(--blue), transparent); opacity: 0; animation: rain-fall linear infinite; }
-      @keyframes rain-fall {
-        0% { transform: translateY(0px); opacity: 0; }
-        12% { opacity: 0.55; }
-        88% { opacity: 0.55; }
-        100% { transform: translateY(32px); opacity: 0; }
-      }
       /* Blood moon: on real lunar eclipse nights the moon toggle glows red. */
       .sky-blood-moon .moon-toggle .moon-art .moon-lit { fill: var(--orange); }
       .sky-blood-moon .moon-toggle .moon-art .moon-disk { fill: color-mix(in srgb, var(--red) 40%, var(--base02)); stroke: var(--red); }
       .sky-blood-moon .moon-toggle .moon-art { filter: drop-shadow(0 0 9px color-mix(in srgb, var(--red) 55%, transparent)); }
       @media (prefers-reduced-motion: reduce) {
-        .wordmark { animation: none; opacity: 1; }
+        .signature { animation: none; opacity: 1; }
+        .signature span { animation: none; }
         .sun-rays { animation: none; }
-        .wordmark .wm-name, .wordmark .wm-rule { animation: none; transform: none; }
         .card { transition: none; }
         .card:hover { transform: none; }
-        .star { animation: none; opacity: 0.35; }
+        .star { animation: none; opacity: 0.5; }
         .constellation, .comet { display: none; }
-        .cloud { animation: none; }
+        .cloud, .cb-layer { animation: none; transition: none; }
+        .cloud-shape, .cloud-face { transition: none; }
+        .cloudbank { animation: none; opacity: 1; }
         .plane-strobe { animation: none; }
-        .rain-drop { animation: none; }
+        .plane svg, .plane .contrail, .plane-lights { transition: none; }
         .moon-lead path, .moon-lead circle, .moon-label, .moon-phase, .container, .min-rest { transition: none; }
         .moon-toggle { animation: none; }
         .is-minimized .nav-icon-btn.min-toggle { animation: none; box-shadow: 0 0 8px color-mix(in srgb, var(--accent-2) 45%, transparent); }
@@ -430,7 +463,7 @@ export default {
     };
     // Tonight's phase, shown in small text above the Light / Dark label on hover.
     const phase = btn.querySelector(".moon-phase");
-    if (phase) phase.textContent = phaseName + " \u00b7 " + pct + "% lit";
+    if (phase) phase.textContent = phaseName + " · " + pct + "% lit";
     label();
     btn.addEventListener("click", () => {
       const next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
@@ -438,7 +471,7 @@ export default {
       else delete document.documentElement.dataset.theme;
       try { localStorage.setItem("theme", next); } catch (e) {}
       label();
-      dispatchEvent(new CustomEvent("themechange")); // swaps the night sky for the day scene
+      dispatchEvent(new CustomEvent("themechange")); // for anything that reacts to the theme (the sky and clouds recolor in CSS)
     });
   })();
 
@@ -501,23 +534,6 @@ export default {
       };
     });
     label();
-  })();
-
-  // Clock: Chicago time (CDT, or CST in winter) and UTC, ticking every second.
-  (() => {
-    const clock = document.querySelector(".clock");
-    if (!clock) return;
-    const local = clock.querySelector(".clock-local"), zone = clock.querySelector(".clock-local-zone"), utc = clock.querySelector(".clock-utc");
-    const time = (tz) => new Intl.DateTimeFormat("en-US", { timeZone: tz, hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23", timeZoneName: "short" }).formatToParts(new Date());
-    const pick = (parts, type) => (parts.find((p) => p.type === type) || {}).value;
-    const tick = () => {
-      const c = time("America/Chicago"), u = time("UTC");
-      local.textContent = pick(c, "hour") + ":" + pick(c, "minute") + ":" + pick(c, "second");
-      zone.textContent = pick(c, "timeZoneName") || "CT";
-      utc.textContent = pick(u, "hour") + ":" + pick(u, "minute") + ":" + pick(u, "second");
-    };
-    tick();
-    setTimeout(() => { tick(); setInterval(tick, 1000); }, 1000 - (Date.now() % 1000)); // tick on the second
   })();
 
   // A sparse field of ASCII stars filling the window. The panel just sits on top of it;
@@ -637,63 +653,468 @@ export default {
     });
   })();
 
-  // Daytime clouds (light theme): ASCII clouds drifting slowly across the sky. Each has a
-  // soft cream body behind its outline, so it hides the sun as it passes in front. Smaller
-  // clouds are fainter and slower, so they read as farther away.
+  // Clouds: a few pixel-art clouds drifting left across the sky like the cloud bank, the
+  // same in both themes. Each hides the sun or moon as it passes in front.
+  // Far clouds are smaller, slower and take a farther cloud-bank color, for depth.
   (() => {
     const layer = document.querySelector(".clouds");
     if (!layer) return;
-    const NL = String.fromCharCode(10);
-    // art: the lines of the cloud. body: soft ellipses filling it, as [column, row, width,
-    // height] in character cells.
-    const CLOUDS = [
-      { art: ["   .--.", " .(    ).", "(___.__)__)"],
-        body: [[3, 0.4, 5, 1.8], [0.6, 1.2, 10, 1.6]] },
-      { art: ["       .--.", "    .-(    ).", "  .(   (    )-.", " (_____(_______))"],
-        body: [[7, 0.5, 5, 1.6], [3, 1.3, 11, 1.8], [1, 2.3, 16, 1.5]] },
-      { art: ["   .-~~~~-.___.-~~~-.", " (___________________)"],
-        body: [[2, 0.5, 19, 1.4]] },
-      { art: ["          .-~~~-.", "   .-~~-.(       )-.", " .(                  ).", "(______________________)"],
-        body: [[9, 0.5, 9, 1.8], [2, 1.3, 21, 1.8], [0.6, 2.4, 23, 1.4]] },
-      { art: ["      __.--~~--.__", " ~~--(____________)--~~"],
-        body: [[5, 0.6, 14, 1.4]] },
-      { art: ["    .--.  .-.", " .-(    )(   ).", "(____________)_)"],
-        body: [[4, 0.4, 5, 1.5], [9, 0.6, 4, 1.3], [1, 1.2, 14, 1.7]] },
-    ];
-    const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const LINE = 1.15; // em, matches .cloud line-height
-    const build = () => {
-      layer.textContent = "";
-      if (document.documentElement.dataset.theme !== "light") return;
-      const w = document.documentElement.clientWidth;
-      const order = CLOUDS.slice().sort(() => Math.random() - 0.5);
-      const count = Math.round(1.56 * Math.max(4, w / 300));
-      for (let i = 0; i < count; i++) {
-        const shape = order[i % order.length];
-        const cloud = document.createElement("pre");
-        cloud.className = "cloud";
-        cloud.textContent = shape.art.join(NL);
-        for (const [c, r, cw, rh] of shape.body) {
-          const body = document.createElement("span");
-          body.className = "cloud-body";
-          body.style.cssText = "left:" + c + "ch;top:" + (r * LINE).toFixed(2) + "em;width:" + cw + "ch;height:" + (rh * LINE).toFixed(2) + "em";
-          cloud.appendChild(body);
+    const rand = (a, b) => a + Math.random() * (b - a);
+
+    // One cloud's shape, w x h art pixels, scaled up by px with hard edges. Most are puffy
+    // all round: big puffs along the top (taller in the middle), smaller ones scalloping the
+    // bottom, and an oval core so there are no holes. Now and then one is flat-bottomed: a
+    // row of puffs cut off along the bottom edge.
+    const shape = (w, h, px, flat) => {
+      const puffs = [];
+      if (flat) {
+        for (let x = h * 0.25; x < w - h * 0.25; ) {
+          const t = x / w, r = h * (0.2 + 0.4 * Math.sin(Math.PI * t)) * rand(0.6, 1);
+          puffs.push([x, h - r * rand(0.2, 0.5), r]);
+          x += r * rand(0.9, 1.3);
         }
-        const depth = Math.random(); // 0 = far, 1 = near
-        cloud.style.fontSize = (10.5 + depth * 5).toFixed(1) + "px";
-        cloud.style.opacity = (0.7 + depth * 0.3).toFixed(2);
-        cloud.style.top = (innerHeight * (0.03 + Math.random() * 0.7)).toFixed(0) + "px";
-        const duration = 380 - depth * 200; // far clouds drift slower
+      } else {
+        const n = Math.max(3, Math.round((w / h) * rand(1.4, 1.9)));
+        for (let i = 0; i < n; i++) {
+          const t = (i + 0.5) / n, r = h * (0.22 + 0.26 * Math.sin(Math.PI * t)) * rand(0.8, 1.1);
+          puffs.push([w * (0.12 + 0.76 * t) + rand(-0.03, 0.03) * w, h * 0.55 - r * rand(0.05, 0.35), r]);
+        }
+        for (let x = w * 0.22; x < w * 0.78; ) {
+          const r = h * rand(0.17, 0.25);
+          puffs.push([x, h - r, r]);
+          x += r * rand(1.1, 1.5);
+        }
+      }
+      // Shrink any puff that would run off the sides or top, so no edge is cut straight.
+      for (const p of puffs) p[2] = Math.min(p[2], p[0] - 0.5, w - p[0] - 0.5, p[1] - 0.5);
+      const art = document.createElement("canvas");
+      art.width = w; art.height = h;
+      const g = art.getContext("2d"), img = g.createImageData(w, h);
+      const ex = w / 2, ey = h * 0.55, rx = w * 0.33, ry = h * 0.26;
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          const ox = (x + 0.5 - ex) / rx, oy = (y + 0.5 - ey) / ry;
+          let on = !flat && ox * ox + oy * oy <= 1;
+          for (let i = 0; !on && i < puffs.length; i++) {
+            const [cx, cy, r] = puffs[i], dx = x + 0.5 - cx, dy = y + 0.5 - cy;
+            on = dx * dx + dy * dy <= r * r;
+          }
+          if (on) img.data[(y * w + x) * 4 + 3] = 255;
+        }
+      }
+      g.putImageData(img, 0, 0);
+      const out = document.createElement("canvas");
+      out.width = w * px; out.height = h * px;
+      const o = out.getContext("2d");
+      o.imageSmoothingEnabled = false;
+      o.drawImage(art, 0, 0, out.width, out.height);
+      return out.toDataURL();
+    };
+
+    const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const pixelSize = () => (innerHeight * 0.26 >= 180 ? 3 : 2); // same pixel size as the cloud bank
+
+    // One cloud, w x h art pixels, colored like cloud-bank layer "tier" (1 far to 3 near).
+    const makeCloud = (w, h, px, flat, tier) => {
+      const cloud = document.createElement("div");
+      cloud.className = "cloud cb-" + tier;
+      cloud.dataset.tier = tier;
+      const body = document.createElement("div");
+      body.className = "cloud-shape";
+      const mask = "url(" + shape(w, h, px, flat) + ")";
+      body.style.setProperty("-webkit-mask-image", mask);
+      body.style.setProperty("mask-image", mask);
+      cloud.appendChild(body);
+      cloud.style.width = w * px + "px";
+      cloud.style.height = h * px + "px";
+      return cloud;
+    };
+    // Adds a cloud in depth order, so nearer clouds pass in front of farther ones.
+    const place = (cloud) => {
+      const nearer = [...layer.children].find((c) => +c.dataset.tier > +cloud.dataset.tier);
+      layer.insertBefore(cloud, nearer || null);
+    };
+
+    // The regular clouds: at most one per depth layer (far, middle, near), 2 on narrow windows
+    // and 3 on wide ones. Visiting characters (below) don't count toward them.
+    const build = () => {
+      layer.querySelectorAll(".cloud:not(.cloud-character)").forEach((c) => c.remove());
+      const vw = document.documentElement.clientWidth, px = pixelSize();
+      const LAYERS = [[1, 0, 0.4], [2, 0.4, 0.75], [3, 0.75, 1]]; // [color layer, depth range]; depth 0 = far, 1 = near
+      const count = vw >= 1250 ? 3 : 2;
+      const picks = LAYERS.slice().sort(() => Math.random() - 0.5).slice(0, count);
+      for (const [tier, lo, hi] of picks) {
+        const depth = rand(lo, hi);
+        const flat = Math.random() < 0.2; // about 1 in 5 has a flat bottom
+        const w = Math.round(rand(26, 40) + depth * 34), h = Math.round(w * (flat ? rand(0.32, 0.42) : rand(0.45, 0.55)));
+        const cloud = makeCloud(w, h, px, flat, tier);
+        cloud.style.top = (innerHeight * (0.03 + Math.random() * 0.55)).toFixed(0) + "px";
+        const duration = (vw + w * px) / (4 + depth * 8); // far clouds drift slower
         cloud.style.animationDuration = duration.toFixed(0) + "s";
         cloud.style.animationDelay = (-Math.random() * duration).toFixed(0) + "s"; // already mid-drift
-        if (still) cloud.style.left = (Math.random() * (w - 240)).toFixed(0) + "px";
-        layer.appendChild(cloud);
+        if (still) cloud.style.left = (Math.random() * (vw - w * px)).toFixed(0) + "px";
+        place(cloud);
       }
     };
-    build();
-    addEventListener("themechange", build);
+    build(); // a theme switch just recolors them (in CSS), so they carry on undisturbed
     let resizeTimer;
     addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(build, 300); });
+
+    // Characters: one-of-a-kind clouds that visit now and then. One drifts across the sky
+    // once, at its depth's speed, then leaves; a few minutes later another (or the same one)
+    // comes by. Each character has a depth layer, makes its cloud, and can start something
+    // while it's visiting (returning a function that stops it). Add new ones to CHARACTERS.
+    const VISIT_GAP = [120000, 300000]; // ms between one visit ending and the next starting
+
+    // A tiny ( ˘ ω ˘ ) on the same pixel grid as the cloud: two closed, content eyes either
+    // side of an ω mouth, centered on the cloud's body.
+    const FACE = [[0, 0], [1, 1], [2, 1], [3, 0], [6, 1], [7, 2], [8, 1], [9, 2], [10, 1], [13, 0], [14, 1], [15, 1], [16, 0]]; // [x, y] art pixels
+    const face = (w, h, px) => {
+      const el = document.createElement("div");
+      el.className = "cloud-face";
+      el.style.left = (Math.round(w / 2 - 8.5) * px) + "px";
+      el.style.top = (Math.round(h * 0.55 - 1.5) * px) + "px";
+      el.innerHTML = '<svg viewBox="0 0 17 3" width="' + 17 * px + '" height="' + 3 * px + '" shape-rendering="crispEdges">' +
+        FACE.map(([x, y]) => '<rect x="' + x + '" y="' + y + '" width="1" height="1"/>').join("") + "</svg>";
+      return el;
+    };
+
+    // A thought bubble over the cloud: fades in, its Zs trade capitals a few times, and it
+    // fades away. Skipped while the cloud is off screen or too near the top to fit it.
+    const SNORES = ["ZzZ...zZz", "zZz...ZzZ"], FLIPS = 5, FLIP_MS = 650;
+    const snore = (cloud) => {
+      const r = cloud.getBoundingClientRect();
+      if (document.hidden || r.left < 0 || r.right > innerWidth - 60 || r.top < 36) return;
+      const box = document.createElement("div");
+      box.className = "cloud-bubble";
+      box.textContent = SNORES[0];
+      cloud.appendChild(box);
+      let n = 0;
+      const flip = setInterval(() => { box.textContent = SNORES[++n % 2]; if (n >= FLIPS) clearInterval(flip); }, FLIP_MS);
+      box.animate([
+        { opacity: 0, transform: "translateY(4px)" },
+        { opacity: 1, transform: "none", offset: 0.12 },
+        { opacity: 1, transform: "none", offset: 0.88 },
+        { opacity: 0, transform: "translateY(-3px)" },
+      ], { duration: 600 + FLIPS * FLIP_MS + 900, easing: "ease-out" }).onfinish = () => { clearInterval(flip); box.remove(); };
+    };
+
+    const CHARACTERS = [
+      // Sleepy_Cloud: a puffy middle-distance cloud with a ( ˘ ω ˘ ) face who dreams in a
+      // thought bubble every 15-25s while he's passing through.
+      { name: "Sleepy_Cloud", tier: 2, depth: 0.6,
+        make: (px) => {
+          const w = Math.round(rand(48, 56)), h = Math.round(w * rand(0.46, 0.52));
+          const cloud = makeCloud(w, h, px, false, 2);
+          cloud.appendChild(face(w, h, px));
+          return cloud;
+        },
+        visit: (cloud, preview) => {
+          let timer = setTimeout(function dream() { snore(cloud); timer = setTimeout(dream, rand(15000, 25000)); }, preview ? 1500 : rand(5000, 9000));
+          return () => clearTimeout(timer);
+        } },
+      // Sky_Whale: a distant whale who treats the cloud bank as his sea: he surfaces, cruises
+      // along the cloud tops spouting, then breaches and dives back under. He moves himself
+      // (run), rather than crossing like a cloud.
+      { name: "Sky_Whale", run: (done) => swim(done) },
+    ];
+
+    // Sky_Whale's sprite, facing left, in two frames (tail up, tail down) swapped as he
+    // swims: B body, L belly, F flipper, E eye, S pale spots.
+    const WHALE = [
+      ["......BBBBBBBB...........BB.BB",
+       "....BBBBBBBBBBBB..........BBB.",
+       "...BBBBBSBBBBBBBBB........BB..",
+       "..BBBBBBBBBBBSBBBBBB.....BB...",
+       "..BBEBBBBBBBBBBBBBBBBBBBBB....",
+       ".BBBBBBBBBBBBBBBBBBBBBBBB.....",
+       ".LLLBBBBBBBBBBBBBBBBBBBB......",
+       ".LLLLLLBBBBBBBBBBBBBBBB.......",
+       "..LLLLLLLLLBBBBFFBBBB.........",
+       "...LLLLLLLLLLLLLFFF...........",
+       ".....LLLLLLLLLL..FF..........."],
+      ["......BBBBBBBB................",
+       "....BBBBBBBBBBBB..............",
+       "...BBBBBSBBBBBBBBB............",
+       "..BBBBBBBBBBBSBBBBBB..........",
+       "..BBEBBBBBBBBBBBBBBBBBBB...BB.",
+       ".BBBBBBBBBBBBBBBBBBBBBBBBBBB..",
+       ".LLLBBBBBBBBBBBBBBBBBBBBBBBBB.",
+       ".LLLLLLBBBBBBBBBBBBBBBB....BB.",
+       "..LLLLLLLLLBBBBFFBBBB.........",
+       "...LLLLLLLLLLLLLFFF...........",
+       ".....LLLLLLLLLL..FF..........."],
+    ];
+    const whaleSprite = (px) => {
+      const cols = WHALE[0][0].length, rows = WHALE[0].length;
+      const frame = (lines, cls) => '<g class="' + cls + '">' + lines.map((line, y) => [...line].map((c, x) =>
+        c === "." ? "" : '<rect class="w' + c + '" x="' + x + '" y="' + y + '" width="1" height="1"/>').join("")).join("") + "</g>";
+      return { w: cols * px, h: rows * px,
+        html: '<svg viewBox="0 0 ' + cols + " " + rows + '" width="' + cols * px + '" height="' + rows * px + '" shape-rendering="crispEdges">' + frame(WHALE[0], "wf-a") + frame(WHALE[1], "wf-b") + "</svg>" };
+    };
+
+    // His swim is one animation along a path in three parts:
+    //   surface: he rises from below the cloud bank (behind all but its farthest layer) to
+    //            cruising depth, where only his back shows above that layer's cloud tops;
+    //   cruise:  he swims slowly along, bobbing in and out of the clouds, and spouts twice;
+    //   breach:  he arcs up out of the clouds to about mid-sky, then dives nose first back
+    //            under, out of sight.
+    // He tilts with his path, and puffs of cloud splash up wherever he breaks the surface.
+    const SURFACE_MS = 7000, BREACH_MS = 22000, CRUISE_SPEED = 10, FLAP_MS = 900, TILT = 50; // CRUISE_SPEED in px/s
+    const pick = (list) => list[Math.floor(Math.random() * list.length)];
+    // A small burst of pixel puffs (in cloud-bank layer "tier"'s color) from around x, y:
+    // each flies up by rise px (spread sideways by spread px), then falls back a little as it fades.
+    const burst = (bank, before, tier, x, y, count, spread, rise, px) => {
+      for (let n = 0; n < count; n++) {
+        const puff = document.createElement("div"), size = px * pick([1, 1, 2, 2, 3]);
+        puff.className = "whale-puff cb-" + tier;
+        puff.style.width = puff.style.height = size + "px";
+        bank.insertBefore(puff, before);
+        const sx = x + rand(-0.3, 0.3) * spread, ex = x + rand(-1, 1) * spread, top = y - rise * rand(0.5, 1);
+        const at = (px2, py) => "translate(" + px2.toFixed(0) + "px, " + py.toFixed(0) + "px)";
+        puff.animate([
+          { transform: at(sx, y), opacity: 1 },
+          { transform: at((sx + ex) / 2, top), opacity: 0.9, offset: 0.55 },
+          { transform: at(ex, top + rise * 0.3), opacity: 0 },
+        ], { duration: rand(1500, 2600), delay: n * rand(20, 60), easing: "ease-out", fill: "backwards" }).onfinish = () => puff.remove();
+      }
+    };
+    const swim = (done) => {
+      const bank = document.querySelector(".cloudbank"), cover = bank && bank.querySelector(".cb-1"), front = bank && bank.querySelector(".cb-2");
+      if (!cover) return done();
+      const vw = document.documentElement.clientWidth, ih = innerHeight, px = pixelSize();
+      const sprite = whaleSprite(px);
+      const whale = document.createElement("div");
+      whale.className = "whale";
+      whale.innerHTML = sprite.html;
+      bank.insertBefore(whale, cover);
+
+      const top = cover.getBoundingClientRect().top, depth = cover.offsetHeight; // that layer's cloud tops are about 30% of the way down it
+      const cruiseY = top + depth * 0.2 + sprite.h / 2; // his center while cruising: just his back shows
+      const startY = ih + sprite.h, peakY = ih * rand(0.38, 0.5), endY = ih + sprite.h * 2;
+      const dir = Math.random() < 0.5 ? -1 : 1; // 1 swims right, -1 left (the sprite faces left)
+      const x0 = dir > 0 ? vw * rand(0.08, 0.3) : vw * rand(0.7, 0.92);
+      const cruiseDist = vw * rand(0.3, 0.4), breachDist = vw * rand(0.22, 0.3);
+      const xs = x0 + dir * vw * 0.04, x1 = xs + dir * cruiseDist, x2 = x1 + dir * breachDist;
+      const CRUISE_MS = (cruiseDist / CRUISE_SPEED) * 1000, total = SURFACE_MS + CRUISE_MS + BREACH_MS;
+
+      // The breach is a lob, y = cruiseY + (endY - cruiseY) u - 4 A u (1 - u), with A found so
+      // its highest point is peakY.
+      const lob = (A, u) => cruiseY + (endY - cruiseY) * u - 4 * A * u * (1 - u);
+      let lo = 0, hi = ih * 4;
+      for (let i = 0; i < 40; i++) { const A = (lo + hi) / 2; let min = Infinity; for (let u = 0; u <= 1; u += 0.01) min = Math.min(min, lob(A, u)); if (min > peakY) lo = A; else hi = A; }
+      const A = (lo + hi) / 2;
+      const at = (ms) => {
+        if (ms < SURFACE_MS) { const u = ms / SURFACE_MS; return [x0 + (xs - x0) * u, startY + (cruiseY - startY) * (1 - (1 - u) * (1 - u))]; }
+        ms -= SURFACE_MS;
+        if (ms < CRUISE_MS) { const u = ms / CRUISE_MS; return [xs + (x1 - xs) * u, cruiseY + Math.sin(u * Math.PI * 6) * 5]; }
+        const u = Math.min(1, (ms - CRUISE_MS) / BREACH_MS);
+        return [x1 + (x2 - x1) * u, lob(A, u)];
+      };
+      const heading = (ms) => { const [ax, ay] = at(Math.max(0, ms - 400)), [bx, by] = at(Math.min(total, ms + 400)); return [bx - ax, by - ay]; };
+
+      const frames = [], steps = Math.ceil(total / 250);
+      for (let i = 0; i <= steps; i++) {
+        const ms = (total * i) / steps, [x, y] = at(ms), [dx, dy] = heading(ms);
+        let angle = (Math.atan2(dy, dx) * 180) / Math.PI; // direction of travel
+        if (dir < 0) angle = ((angle + 360) % 360) - 180; // the sprite faces left
+        const tilt = Math.max(-TILT, Math.min(TILT, angle));
+        frames.push({ offset: ms / total, transform: "translate(" + (x - sprite.w / 2).toFixed(1) + "px, " + (y - sprite.h / 2).toFixed(1) + "px) rotate(" + tilt.toFixed(1) + "deg)" + (dir > 0 ? " scaleX(-1)" : "") });
+      }
+      const path = whale.animate(frames, { duration: total, easing: "linear" });
+      const flap = setInterval(() => whale.classList.toggle("flap"), FLAP_MS);
+
+      // Spouts: a little fountain of vapor from his blowhole (top of the head), twice while cruising.
+      const spout = () => {
+        if (document.hidden) return;
+        const [x, y] = at(path.currentTime || 0);
+        burst(bank, front, 3, x + dir * 6.5 * px, y - sprite.h / 2, 14, 10, rand(26, 40), px);
+      };
+      const spouts = [0.3, 0.7].map((f) => setTimeout(spout, SURFACE_MS + CRUISE_MS * (f + rand(-0.08, 0.08))));
+      // Splashes: whenever he's crossing the cloud tops steeply (coming up or diving in).
+      // (The cloud tops are measured each time, in case the window has changed size since.)
+      const splash = setInterval(() => {
+        if (document.hidden || !cover.isConnected) return;
+        const ms = path.currentTime || 0, [x, y] = at(ms), [dx, dy] = heading(ms);
+        const tops = cover.getBoundingClientRect().top + cover.offsetHeight * 0.3;
+        if (Math.abs(dy) > 0.45 * Math.hypot(dx, dy) && Math.abs(y - tops) < sprite.h * 0.6) burst(bank, cover, 1, x, tops, 3, sprite.w * 0.6, rand(16, 36), px);
+      }, 200);
+
+      path.onfinish = () => { clearInterval(flap); clearInterval(splash); spouts.forEach(clearTimeout); whale.remove(); done(); };
+    };
+
+    // Picks a visitor (a character marked night: true only comes at night) and sends it
+    // across. preview names one
+    // to show right away (the #snore and #whale links), starting a cloud a third of the way in.
+    const isNight = () => document.documentElement.dataset.theme !== "light";
+    const visit = (preview) => {
+      const next = () => setTimeout(visit, rand(VISIT_GAP[0], VISIT_GAP[1]));
+      const pool = preview ? CHARACTERS.filter((c) => c.name === preview) : CHARACTERS.filter((c) => !c.night || isNight());
+      const who = pool[Math.floor(Math.random() * pool.length)];
+      if (!who) return next();
+      if (who.run) return who.run(next);
+      const cloud = who.make(pixelSize());
+      cloud.classList.add("cloud-character");
+      cloud.dataset.character = who.name;
+      cloud.style.animation = "none"; // it crosses once, below, instead of looping
+      cloud.style.top = (innerHeight * rand(0.1, 0.5)).toFixed(0) + "px";
+      place(cloud);
+      const travel = document.documentElement.clientWidth + cloud.offsetWidth;
+      const crossing = cloud.animate([{ transform: "translateX(0px)" }, { transform: "translateX(" + -travel + "px)" }],
+        { duration: (travel / (4 + who.depth * 8)) * 1000, easing: "linear" });
+      if (preview) crossing.currentTime = crossing.effect.getTiming().duration * 0.35;
+      const stop = who.visit ? who.visit(cloud, preview) : () => {};
+      crossing.onfinish = () => { stop(); cloud.remove(); next(); };
+    };
+    const PREVIEWS = { "#snore": "Sleepy_Cloud", "#whale": "Sky_Whale" };
+    if (!still) {
+      if (PREVIEWS[location.hash]) setTimeout(() => visit(PREVIEWS[location.hash]), 300); // once the cloud bank (below) is built
+      else setTimeout(visit, rand(20000, 60000)); // the first visitor shows up within a minute
+    }
+  })();
+
+  // Cloud bank: four layers of pixel-art clouds along the bottom of the window, after the
+  // ending of Cave Story. Each layer scrolls left, the front fastest and the back slowest,
+  // for depth. A layer's shape is drawn once as a seamless tile and used as a CSS mask, so
+  // its color comes from the theme and a theme switch needs no redraw.
+  (() => {
+    const bank = document.querySelector(".cloudbank");
+    if (!bank) return;
+    // Back to front: height (fraction of the bank), tile width (art pixels), speed (px/s).
+    const LAYERS = [
+      { height: 1, width: 230, speed: 10 },
+      { height: 0.78, width: 270, speed: 17 },
+      { height: 0.58, width: 310, speed: 26 },
+      { height: 0.4, width: 350, speed: 40 },
+    ];
+    const rand = (a, b) => a + Math.random() * (b - a);
+    const bandHeight = () => Math.round(Math.min(260, Math.max(110, innerHeight * 0.26)));
+
+    // One layer's silhouette, w x h art pixels, scaled up by px with hard edges: a solid
+    // base with round puffs along its top (now and then a big one). Distances wrap around
+    // the tile, so its ends join seamlessly. Returns the mask image and the height of the
+    // top edge in each column (for the signature to ride on).
+    const tile = (w, h, px) => {
+      const puffs = [];
+      for (let x = 0; x < w; ) {
+        const r = (Math.random() < 0.15 ? rand(0.4, 0.48) : rand(0.18, 0.34)) * h;
+        puffs.push([x, Math.max(r, h * rand(0.5, 0.65)), r]);
+        x += r * rand(0.6, 1.1);
+      }
+      const base = Math.round(h * 0.62);
+      const art = document.createElement("canvas");
+      art.width = w; art.height = h;
+      const g = art.getContext("2d"), img = g.createImageData(w, h), tops = new Array(w).fill(h);
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          let on = y >= base;
+          for (let i = 0; !on && i < puffs.length; i++) {
+            const [cx, cy, r] = puffs[i];
+            let dx = Math.abs(x + 0.5 - cx);
+            dx = Math.min(dx, w - dx);
+            const dy = y + 0.5 - cy;
+            on = dx * dx + dy * dy <= r * r;
+          }
+          if (on) {
+            img.data[(y * w + x) * 4 + 3] = 255;
+            if (y < tops[x]) tops[x] = y;
+          }
+        }
+      }
+      g.putImageData(img, 0, 0);
+      const out = document.createElement("canvas");
+      out.width = w * px; out.height = h * px;
+      const o = out.getContext("2d");
+      o.imageSmoothingEnabled = false;
+      o.drawImage(art, 0, 0, out.width, out.height);
+      return { url: out.toDataURL(), tops };
+    };
+
+    let built = 0, front = null;
+    const build = () => {
+      const band = built = bandHeight(), px = band >= 180 ? 3 : 2;
+      bank.textContent = "";
+      LAYERS.forEach((layer, i) => {
+        const h = Math.round((band * layer.height) / px), tw = layer.width * px, th = h * px;
+        const art = tile(layer.width, h, px);
+        const mask = "url(" + art.url + ")", size = tw + "px " + th + "px";
+        const duration = tw / layer.speed;
+        const el = document.createElement("div");
+        el.className = "cb-layer cb-" + i;
+        el.style.height = th + "px";
+        el.style.setProperty("--tile", tw + "px");
+        el.style.setProperty("-webkit-mask-image", mask);
+        el.style.setProperty("mask-image", mask);
+        el.style.setProperty("-webkit-mask-size", size);
+        el.style.setProperty("mask-size", size);
+        el.style.animationDuration = duration.toFixed(1) + "s";
+        el.style.animationDelay = (-Math.random() * duration).toFixed(1) + "s";
+        bank.appendChild(el);
+        if (i === LAYERS.length - 1) front = { el, tops: art.tops, px, tw, th };
+      });
+    };
+    build();
+
+    // Signature: each letter of the name floats just under the front layer's surface, so as
+    // the cloud tops scroll by beneath it the name bobs up and down with them. The surface
+    // is averaged over a stretch around each letter so the bobbing reads as gentle swells.
+    const sig = document.querySelector(".signature");
+    const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let letters = [], rest = [], cur = [];
+    if (sig) {
+      letters = [...sig.textContent].map((ch) => {
+        const span = document.createElement("span");
+        span.textContent = ch;
+        return span;
+      });
+      sig.replaceChildren(...letters);
+    }
+    // Where each letter sits untouched (its offsets are measured from there), and its offset
+    // in the name, which lines up its slice of the gradient.
+    const measure = () => {
+      letters.forEach((s) => { s.style.transform = ""; s.style.setProperty("--x", s.offsetLeft + "px"); });
+      rest = letters.map((s) => { const r = s.getBoundingClientRect(); return { x: r.left + r.width / 2, w: r.width, top: r.top, h: r.height }; });
+      cur = rest.map(() => null);
+    };
+    // On top of that, a slight, slow wave runs along the name. Each letter is kept inside the
+    // cloud: never above the surface right over it, never below the window's edge.
+    const DEPTH = 12, REACH = 36, EASE = 0.06; // px under the surface, px averaged either side, smoothing per frame
+    const WAVE = 3, WAVE_PERIOD = 6, WAVE_STEP = 0.5; // px high, seconds per swell, phase between letters
+    const tick = (now) => {
+      const anim = front && front.el.getAnimations()[0];
+      if (anim && rest.length) {
+        const { tops, px, tw, th } = front;
+        const offset = (anim.effect.getComputedTiming().progress || 0) * tw;
+        const phase = ((now / 1000) * 2 * Math.PI) / WAVE_PERIOD;
+        // Viewport y of the front layer's top edge at screen x.
+        const surface = (x) => innerHeight - th + tops[Math.floor(((((x + offset) % tw) + tw) % tw) / px)] * px;
+        letters.forEach((s, i) => {
+          const r = rest[i];
+          let y = 0;
+          for (let k = -2; k <= 2; k++) y += surface(r.x + (k * REACH) / 2);
+          const local = Math.max(surface(r.x - r.w / 2), surface(r.x), surface(r.x + r.w / 2)); // lowest point of the surface over the letter
+          const top = Math.max(y / 5 + DEPTH + WAVE * Math.sin(phase + i * WAVE_STEP), local + 2);
+          const target = Math.min(top, innerHeight - 6 - r.h) - r.top;
+          cur[i] = cur[i] === null ? target : cur[i] + (target - cur[i]) * EASE;
+          s.style.transform = "translateY(" + cur[i].toFixed(1) + "px)";
+        });
+      }
+      requestAnimationFrame(tick);
+    };
+    if (sig) {
+      measure();
+      if (document.fonts) document.fonts.ready.then(measure); // the name's font loads after the page
+      if (!still) requestAnimationFrame(tick);
+    }
+
+    let resizeTimer;
+    addEventListener("resize", () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (bandHeight() !== built) build();
+        if (sig) measure();
+      }, 300);
+    });
   })();
 
   // Constellations: every 20-40s one fades in somewhere in the sky, drawn from real star
@@ -833,7 +1254,7 @@ export default {
     const hash = location.hash;
 
     // Chance of each event per check (about every 20s). Set one to 0 to turn it off.
-    const SKY_EVENTS = { meteor: 0.35, satellite: 0.30, airplane: 0.12, supernova: 0.05, comet: 0.05 };
+    const SKY_EVENTS = { meteor: 0.35, satellite: 0.30, plane: 0.12, supernova: 0.05, comet: 0.05 };
     // Date-based extras.
     const HOLIDAYS = { meteorShowers: true, newYearFireworks: true, bloodMoon: true };
 
@@ -850,7 +1271,7 @@ export default {
       root.classList.add("sky-blood-moon"); // the moon toggle turns red (see .sky-blood-moon in site.css)
       const moon = document.querySelector(".moon-toggle");
       const phase = moon && moon.querySelector(".moon-phase");
-      if (phase) phase.textContent = "Lunar eclipse \u00b7 blood moon";
+      if (phase) phase.textContent = "Lunar eclipse · blood moon";
     }
 
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return; // the moving events are off
@@ -950,21 +1371,27 @@ export default {
       ], timing);
     };
 
-    // Airplane: a slow, nearly level crossing. Steady red and green wingtip lights (red on
-    // the left wing, green on the right) either side of a white double-flash strobe.
-    const airplane = (done) => {
-      const v = view(), h = v.bottom - v.top;
-      const leftToRight = Math.random() < 0.5;
-      const x0 = leftToRight ? -20 : v.w + 20, x1 = leftToRight ? v.w + 20 : -20;
-      const y0 = v.top + rand(0.1, 0.6) * h, y1 = y0 + rand(-0.06, 0.06) * h;
-      const upper = leftToRight ? "plane-port" : "plane-starboard", lower = leftToRight ? "plane-starboard" : "plane-port";
-      const p = add("airplane", x0, y0, '<span class="plane-light plane-top ' + upper + '"></span><span class="plane-light plane-strobe"></span><span class="plane-light plane-bottom ' + lower + '"></span>');
+    // Plane: a slow, nearly level crossing, the same plane in both themes (the CSS shows it lit
+    // by day, or as lights in the dark by night, and fades between them if the theme changes
+    // mid-flight). Seen from below: a silhouette trailing a contrail, with steady red and
+    // green wingtip lights (red on the left wing, green on the right) either side of a white
+    // double-flash strobe.
+    const PLANE_SVG = '<svg viewBox="0 0 24 10"><path d="M23 5 Q22 4.2 19 4.2 L13 4.2 L9.5 0.4 L7.6 0.4 L9.6 4.2 L4 4.4 L2.2 1.8 L1 1.8 L1.8 4.6 L1.8 5.4 L1 8.2 L2.2 8.2 L4 5.6 L9.6 5.8 L7.6 9.6 L9.5 9.6 L13 5.8 L19 5.8 Q22 5.8 23 5 Z"/></svg>';
+    const plane = (done) => {
+      const v = view(), h = v.bottom - v.top, ltr = Math.random() < 0.5;
+      const x0 = ltr ? -30 : v.w + 30, x1 = ltr ? v.w + 330 : -330; // far enough for the contrail to leave too
+      const y0 = v.top + rand(0.08, 0.45) * h, dy = rand(-0.05, 0.05) * h;
+      // Drawn facing right and mirrored to fly left, which also swaps which wingtip is on top.
+      const upper = ltr ? "plane-port" : "plane-starboard", lower = ltr ? "plane-starboard" : "plane-port";
+      const p = add("plane", x0, y0, '<div class="contrail"></div>' + PLANE_SVG +
+        '<div class="plane-lights"><span class="plane-light plane-top ' + upper + '"></span><span class="plane-light plane-strobe"></span><span class="plane-light plane-bottom ' + lower + '"></span></div>');
+      const flip = ltr ? "" : " scaleX(-1)";
       p.animate([
-        { transform: "translate(0px, 0px)", opacity: 0 },
+        { transform: "translate(0px, 0px)" + flip, opacity: 0 },
         { opacity: 0.9, offset: 0.05 },
         { opacity: 0.9, offset: 0.95 },
-        { transform: "translate(" + (x1 - x0).toFixed(0) + "px, " + (y1 - y0).toFixed(0) + "px)", opacity: 0 },
-      ], { duration: rand(35000, 50000), easing: "linear" }).onfinish = () => { p.remove(); done(); };
+        { transform: "translate(" + (x1 - x0).toFixed(0) + "px, " + dy.toFixed(0) + "px)" + flip, opacity: 0 },
+      ], { duration: rand(45000, 60000), easing: "linear" }).onfinish = () => { p.remove(); done(); };
     };
 
     // Comet: glides slowly across the sky on a shallow diagonal.
@@ -1057,89 +1484,11 @@ export default {
       glide(g, x1 - x0, rand(-0.1, 0.05) * h, rand(34000, 46000), done);
     };
 
-    // Leaves: a handful of small ASCII leaves tumbling down on the breeze in warm palette colors.
-    const LEAF_COLORS = ["red", "orange", "yellow"];
-    const BS = String.fromCharCode(92), LF = String.fromCharCode(10);
-    const LEAF_ART = [
-      ["  /" + BS, " /|" + BS, " " + BS + "|/", "  |"],
-      ["  _", " ( " + BS, "  " + BS + "_)", "   " + BS],
-      [" _", "(" + BS + ")", " " + BS],
-    ].map((lines) => lines.join(LF));
-    const leaves = (done) => {
-      const v = view(), h = v.bottom - v.top, n = Math.floor(rand(3, 7));
-      let left = n;
-      for (let i = 0; i < n; i++) {
-        setTimeout(() => {
-          const leaf = add("leaf", rand(0.05, 0.95) * v.w, v.top + rand(-0.05, 0.25) * h);
-          leaf.textContent = pick(LEAF_ART);
-          leaf.style.color = "var(--" + pick(LEAF_COLORS) + ")";
-          const fall = rand(0.35, 0.7) * h, drift = rand(-120, 120), spin = rand(-360, 360), frames = [];
-          for (let k = 0; k <= 8; k++) {
-            const t = k / 8, sway = Math.sin(t * Math.PI * 3) * 28;
-            frames.push({ transform: "translate(" + (drift * t + sway).toFixed(0) + "px, " + (fall * t).toFixed(0) + "px) rotate(" + (spin * t).toFixed(0) + "deg)", opacity: k === 0 || k === 8 ? 0 : 0.9 });
-          }
-          leaf.animate(frames, { duration: rand(9000, 15000), easing: "linear" }).onfinish = () => { leaf.remove(); if (--left === 0) done(); };
-        }, i * rand(300, 1400));
-      }
-    };
-
-    // Plane: a small silhouette high up, trailing a white contrail.
-    const dayPlane = (done) => {
-      const v = view(), h = v.bottom - v.top, ltr = Math.random() < 0.5;
-      const x0 = ltr ? -30 : v.w + 30, x1 = ltr ? v.w + 330 : -330;
-      const p = add("day-plane", x0, v.top + rand(0.05, 0.35) * h,
-        '<div class="contrail"></div><svg viewBox="0 0 24 10"><path d="M23 5 Q22 4.2 19 4.2 L13 4.2 L9.5 0.4 L7.6 0.4 L9.6 4.2 L4 4.4 L2.2 1.8 L1 1.8 L1.8 4.6 L1.8 5.4 L1 8.2 L2.2 8.2 L4 5.6 L9.6 5.8 L7.6 9.6 L9.5 9.6 L13 5.8 L19 5.8 Q22 5.8 23 5 Z"/></svg>');
-      const flip = ltr ? "" : " scaleX(-1)", dy = rand(-0.05, 0.05) * h;
-      p.animate([
-        { transform: "translate(0px, 0px)" + flip, opacity: 0 },
-        { opacity: 0.85, offset: 0.05 },
-        { opacity: 0.85, offset: 0.95 },
-        { transform: "translate(" + (x1 - x0).toFixed(0) + "px, " + dy.toFixed(0) + "px)" + flip, opacity: 0 },
-      ], { duration: rand(45000, 60000), easing: "linear" }).onfinish = () => { p.remove(); done(); };
-    };
-
-    // Hot-air balloon: an ASCII block, colored per spawn, rising slowly from low in the
-    // sky, drifting and swaying.
-    const BALLOON_COLORS = ["red", "orange", "yellow", "magenta"];
-    const NL = String.fromCharCode(10);
-    const BALLOON_ART = [" .-.", "(   )", " )-(", "  |", " [_]"].join(NL);
-    const balloon = (done) => {
-      const v = view(), h = v.bottom - v.top;
-      const b = add("balloon", rand(0.1, 0.9) * v.w, v.top + rand(0.7, 0.9) * h, "<pre>" + BALLOON_ART + "</pre>");
-      b.style.color = "var(--" + pick(BALLOON_COLORS) + ")";
-      const rise = rand(0.35, 0.55) * h, drift = rand(-200, 200), frames = [];
-      for (let k = 0; k <= 8; k++) {
-        const t = k / 8;
-        frames.push({ transform: "translate(" + (drift * t).toFixed(0) + "px, " + (-rise * t).toFixed(0) + "px) rotate(" + (Math.sin(t * Math.PI * 4) * 3).toFixed(1) + "deg)", opacity: k === 0 || k === 8 ? 0 : 0.95 });
-      }
-      b.animate(frames, { duration: rand(70000, 90000), easing: "ease-in-out" }).onfinish = () => { b.remove(); done(); };
-    };
-
-    // Rain shower: a loose cluster of falling streaks drifts across the sky.
-    const rain = (done) => {
-      const v = view(), h = v.bottom - v.top;
-      const leftToRight = Math.random() < 0.5;
-      const x0 = leftToRight ? -140 : v.w + 140, x1 = leftToRight ? v.w + 140 : -140;
-      const y0 = v.top + rand(0.06, 0.24) * h;
-      let drops = "";
-      for (let i = 0; i < 7; i++) {
-        const dx = 6 + i * 9 + rand(-3, 3);
-        drops += '<span class="rain-drop" style="left:' + dx.toFixed(0) + 'px;animation-duration:' + rand(0.5, 0.85).toFixed(2) + 's;animation-delay:-' + rand(0, 0.8).toFixed(2) + 's"></span>';
-      }
-      const g = add("rain", x0, y0, '<div class="rain-drops">' + drops + '</div>');
-      g.animate([
-        { transform: "translate(0px, 0px)", opacity: 0 },
-        { opacity: 0.9, offset: 0.06 },
-        { opacity: 0.9, offset: 0.92 },
-        { transform: "translate(" + (x1 - x0).toFixed(0) + "px, 0px)", opacity: 0 },
-      ], { duration: rand(26000, 34000), easing: "linear" }).onfinish = () => { g.remove(); done(); };
-    };
-
     // Chance of each daytime event per check. Set one to 0 to turn it off.
-    const DAY_EVENTS = { birds: 0.28, leaves: 0.17, plane: 0.15, balloon: 0.05, migration: 0.04, rain: 0.10 };
+    const DAY_EVENTS = { birds: 0.32, plane: 0.18, migration: 0.05 };
     const isDay = () => root.dataset.theme === "light";
 
-    const EVENTS = { meteor: meteors, satellite, airplane, supernova, comet, fireworks, birds, migration, leaves, plane: dayPlane, balloon, rain };
+    const EVENTS = { meteor: meteors, satellite, plane, supernova, comet, fireworks, birds, migration };
     // Holidays tilt the odds: New Year's (Dec 30 - Jan 1) is mostly fireworks, shower nights mostly meteors.
     const chances = newYear ? { fireworks: 0.7, meteor: 0.2, satellite: 0.05 }
       : shower ? Object.assign({}, SKY_EVENTS, { meteor: 0.8 - Object.keys(SKY_EVENTS).filter((k) => k !== "meteor").reduce((sum, k) => sum + SKY_EVENTS[k], 0) })
@@ -1162,8 +1511,8 @@ export default {
     if (hash === "#sky") {
       // Preview: every event once, back to back (the satellite always flares). In the light
       // theme it previews the daytime events instead.
-      const order = isDay() ? ["birds", "leaves", "plane", "balloon", "migration", "rain"]
-        : ["meteor", "satellite", "airplane", "supernova", "comet", "fireworks"];
+      const order = isDay() ? ["birds", "plane", "migration"]
+        : ["meteor", "satellite", "plane", "supernova", "comet", "fireworks"];
       const step = () => {
         const name = order.shift();
         if (!name) return check();
@@ -1171,6 +1520,10 @@ export default {
         EVENTS[name](() => { busy = false; setTimeout(step, 1500); }, true);
       };
       setTimeout(step, 2000);
+    } else if (hash === "#plane") {
+      // Preview: a plane right away (switch themes while it's crossing to see it change).
+      busy = true;
+      setTimeout(() => plane(() => { busy = false; check(); }), 1000);
     } else {
       setTimeout(check, rand(8000, 15000));
     }
@@ -1298,7 +1651,7 @@ export default {
                 </tbody>
             </table>
         </div>
-        <a href="/projects" class="back-link" style="display: block; margin-top: 2rem;">← Back to Projects</a>`;
+        <a href="/projects" class="back-link" style="display: block; margin-top: 2rem;">&larr; Back to Projects</a>`;
 
     } else if (path === "/project/2") {
 
@@ -1337,7 +1690,7 @@ export default {
             </div>
             <p style="margin-top: 1.5rem;"><a href="https://github.com/SleepyZip/SleepyToolz/tree/main/browser-activity-report" target="_blank" class="contact-link" style="padding-left:0;">Source on GitHub &rarr;</a></p>
         </div>
-        <a href="/projects" class="back-link" style="display: block; margin-top: 2rem;">← Back to Projects</a>`;
+        <a href="/projects" class="back-link" style="display: block; margin-top: 2rem;">&larr; Back to Projects</a>`;
 
     } else if (path === "/project/3") {
 
@@ -1375,7 +1728,7 @@ export default {
             </div>
             <p style="margin-top: 1.5rem;"><a href="https://github.com/SleepyZip/SleepyToolz/tree/main/windows-scripts-toolkit" target="_blank" class="contact-link" style="padding-left:0;">Source on GitHub &rarr;</a></p>
         </div>
-        <a href="/projects" class="back-link" style="display: block; margin-top: 2rem;">← Back to Projects</a>`;
+        <a href="/projects" class="back-link" style="display: block; margin-top: 2rem;">&larr; Back to Projects</a>`;
 
     } else if (path === "/project/4") {
 
@@ -1421,7 +1774,7 @@ export default {
             </div>
             <p style="margin-top: 1.5rem;"><a href="https://github.com/SleepyZip/Building-Directory-Board-Demo" target="_blank" class="contact-link" style="padding-left:0;">Source on GitHub &rarr;</a></p>
         </div>
-        <a href="/projects" class="back-link" style="display: block; margin-top: 2rem;">← Back to Projects</a>`;
+        <a href="/projects" class="back-link" style="display: block; margin-top: 2rem;">&larr; Back to Projects</a>`;
 
     } else if (path === "/project/5") {
 
@@ -1446,7 +1799,7 @@ export default {
               <a href="https://community.obsidian.md/themes/qudian" target="_blank" class="contact-link" style="padding-left:0;">View on Obsidian Community Themes &rarr;</a>
             </p>
         </div>
-        <a href="/projects" class="back-link" style="display: block; margin-top: 2rem;">← Back to Projects</a>`;
+        <a href="/projects" class="back-link" style="display: block; margin-top: 2rem;">&larr; Back to Projects</a>`;
 
     } else if (path === "/about") {
 
@@ -1459,9 +1812,6 @@ export default {
             <h2>Trevor DeMelo</h2>
             <p>
               Hello. This is my website. I have a tremendous curiosity and a genuine love for all things technology. I'm still figuring out this web page, but I'm having fun with it (as you can hopefully see).
-            </p>
-            <p style="margin-top: 16px;">
-              <a href="/projects" class="contact-link" style="padding-left:0;">View My Work &rarr;</a>
             </p>
           </div>
           <div class="bio-portrait-frame">
@@ -1507,11 +1857,11 @@ export default {
 
     // Assemble the complete HTML document using the layout frame
     return new Response(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Trevor DeMelo | Portfolio</title><link rel="icon" type="image/svg+xml" href="/assets/duck.svg"><meta name="description" content="Trevor DeMelo, IT professional. Network administration, systems diagnostics, and Cloudflare Workers projects."><meta property="og:title" content="Trevor DeMelo | Portfolio"><meta property="og:description" content="IT professional. Network administration, systems diagnostics, and Cloudflare Workers projects."><meta property="og:type" content="website"><meta property="og:url" content="https://trevordemelo.com"><meta property="og:image" content="https://github.com/SleepyZip/mywebpage/blob/main/Assets/Images/AboutMe.png?raw=true"><script>var t; try { t = localStorage.getItem("theme"); } catch (e) {} if (t !== "dark") document.documentElement.dataset.theme = "light";</script><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300&display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/site.css"></head><body>
-      <div class="wordmark" aria-hidden="true"><span class="wm-name">Trevor DeMelo</span><span class="wm-rule"></span></div>
       <div class="sky" aria-hidden="true"></div>
       <button type="button" class="moon-toggle" aria-label="Switch to light theme"><svg class="moon-art" viewBox="0 0 38 38" aria-hidden="true"><circle class="moon-disk" cx="19" cy="19" r="18.6"/><path class="moon-lit" d=""/></svg><svg class="sun-art" viewBox="0 0 38 38" aria-hidden="true"><circle cx="19" cy="19" r="8"/><g class="sun-rays"><text x="19" y="4.5">|</text><text x="29.3" y="8.7">/</text><text x="33.5" y="19">-</text><text x="29.3" y="29.3">&#92;</text><text x="19" y="33.5">|</text><text x="8.7" y="29.3">/</text><text x="4.5" y="19">-</text><text x="8.7" y="8.7">&#92;</text></g></svg><span class="moon-lead" aria-hidden="true"><svg viewBox="0 0 60 20"><path d="M1 1 L13 13 H55"/><circle cx="57" cy="13" r="2"/></svg></span><span class="moon-phase" aria-hidden="true"></span><span class="moon-label" aria-hidden="true"><span class="theme-word theme-word-light">Light</span><span class="theme-sep">/</span><span class="theme-word theme-word-dark">Dark</span></span></button>
       <div class="clouds" aria-hidden="true"></div>
-      <div class="clock" aria-hidden="true"><span class="clock-zone clock-local-zone">CDT</span> <span class="clock-local">--:--:--</span><span class="clock-sep">&middot;</span><span class="clock-zone">UTC</span> <span class="clock-utc">--:--:--</span></div>
+      <div class="cloudbank" aria-hidden="true"></div>
+      <div class="signature" aria-hidden="true">Trevor DeMelo</div>
       <div class="container${content ? "" : " is-home"}">
         <nav>
           <div>
