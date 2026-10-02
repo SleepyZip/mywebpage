@@ -1458,10 +1458,7 @@ export default {
           <div class="bio-text">
             <h2>Trevor DeMelo</h2>
             <p>
-              I've been messing with computers for as long as I can remember. As a kid, I couldn't leave anything alone. If a setting existed, I changed it. If something could be opened, I opened it. Usually I broke something. Usually I figured out how to fix it.
-            </p>
-            <p>
-              The curiosity never went away. It just turned into years of learning how things work, all the way down. I like taking apart hard problems, turning tedious chores into things that run themselves, and building stuff just to see if I can. If there's a better way to do something, I'll find it. Not because I have to. Because there's always something further in.
+              Hello. This is my website. I have a tremendous curiosity and a genuine love for all things technology. I'm still figuring out this web page, but I'm having fun with it (as you can hopefully see).
             </p>
             <p style="margin-top: 16px;">
               <a href="/projects" class="contact-link" style="padding-left:0;">View My Work &rarr;</a>
